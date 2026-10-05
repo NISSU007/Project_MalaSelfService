@@ -46,9 +46,14 @@
     <% order.items.forEach(function (it) { %>
       <div class="detail-row">
         <div>
-          <!-- ===== นำส่วนแสดงผล 2 น้ำซุปออก กลับมาแสดงแค่ไอคอนและชื่อเมนู ===== -->
-          <%= CATEGORY_ICON[it.Category_Name] %> <%= it.Menu_Name %>
+          <!-- แก้ไขการเรียกใช้ไอคอน -->
+          <%= CATEGORY_ICON[it.Category_Name] || '🍽' %> <%= it.Menu_Name %>
           
+          <!-- แสดงผลประเภทน้ำซุป เฉพาะกรณีเลือกผสม 2 น้ำซุป -->
+          <% if (it.Soup_Type && (it.Menu_Name.includes('2') || it.Soup_Type.includes('+'))) { %>
+            <small style="display:block; color:#555; margin-top:2px;">น้ำซุป: <%= it.Soup_Type %></small>
+          <% } %>
+
           <% if (it.Spiciness_Level) { %><small>🌶 <%= it.Spiciness_Level %></small><% } %>
           <% if (it.Special_Note) { %><small><%= it.Special_Note %></small><% } %>
         </div>
@@ -83,7 +88,9 @@
   const orderId = <%= order.Order_ID %>;
   let lastStatus = '<%= order.Order_Status %>';
   let seenNotify = Number(sessionStorage.getItem('seen-' + orderId) || 0);
-  let currentNotify = <%= notify %>;
+  
+  // ป้องกัน Syntax Error กรณีไม่มีตัวแปร notify ส่งมาจาก Controller
+  let currentNotify = <%= typeof notify !== 'undefined' ? (notify || 0) : 0 %>;
 
   function showModal() {
     document.getElementById('readyModal').classList.remove('hidden');

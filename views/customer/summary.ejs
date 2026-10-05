@@ -17,9 +17,13 @@
         <div class="row-img"><%= CATEGORY_ICON[it.Category_Name] %></div>
         <div class="row-info">
           
-          <!-- ===== นำส่วนแสดงผล 2 น้ำซุปออก กลับมาแสดงแค่ชื่อเมนู ===== -->
           <h4><%= it.Menu_Name %></h4>
           
+          <!-- แสดงผลประเภทน้ำซุป เฉพาะกรณีเลือกผสม 2 น้ำซุป -->
+          <% if (it.Soup_Type && (it.Menu_Name.includes('2') || it.Soup_Type.includes('+'))) { %>
+            <small class="muted" style="display:block; color:#555; margin-top:2px;">น้ำซุป: <%= it.Soup_Type %></small>
+          <% } %>
+
           <% if (it.Spiciness_Level) { %><small class="link-red">🌶 <%= it.Spiciness_Level %></small><% } %>
           <small class="muted">จำนวน <%= it.Quantity %> ชุด<%= it.Special_Note ? ' · ' + it.Special_Note : '' %></small>
         </div>

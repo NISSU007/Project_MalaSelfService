@@ -1,109 +1,171 @@
 <%- include('../partials/head', {css: 'cashier', title: 'คิดเงินสด', refresh: selected ? 0 : 15 }) %>
 <body>
 <div class="staff">
-  <%- include('../partials/staff-top', { roleLabel: 'แคชเชียร์' }) %>
+  <%- include('../partials/staff-top', { roleLabel: 'พนักงาน แคชเชียร์' }) %>
 
   <main class="s-main">
     <!-- ===== หัวข้อหน้าแคชเชียร์ ===== -->
-    <h1 class="s-title">คิดเงินสด <small class="muted" style="font-size:16px;font-weight:400">รับชำระเงินสด</small></h1>
+    <h1 class="s-title" style="margin-bottom: 16px;">
+      คิดเงินสด <small class="muted" style="font-size:16px; font-weight:400;">รับชำระเงินสด</small>
+    </h1>
 
-    <% if (success) { %><div class="alert alert-green" role="status">✔ บันทึกการรับเงินเรียบร้อย ส่งออเดอร์เข้าครัวแล้ว</div><% } %>
+    <% if (success) { %>
+      <div class="alert alert-green" role="status" style="margin-bottom: 16px;">
+        ✔ บันทึกการรับเงินเรียบร้อย ส่งออเดอร์เข้าครัวแล้ว
+      </div>
+    <% } %>
 
     <div class="cashier-grid">
 
+      <!-- ========================================== -->
       <!-- ===== คอลัมน์ 1 : รายการออเดอร์ ===== -->
+      <!-- ========================================== -->
       <section class="panel">
         <h3>รายการออเดอร์ (รอชำระเงิน)</h3>
-        <!-- ===== แท็บกรองสถานะ ===== -->
-        <div class="s-tabs" style="margin-bottom:10px">
+        
+        <!-- แท็บกรองสถานะ -->
+        <div class="s-tabs">
           <a href="?tab=all&q=<%= q %>" class="<%= tab === 'all' ? 'active' : '' %>">ทั้งหมด (<%= counts.all %>)</a>
           <a href="?tab=pending&q=<%= q %>" class="<%= tab === 'pending' ? 'active' : '' %>">รอชำระเงิน (<%= counts.pending %>)</a>
           <a href="?tab=paid&q=<%= q %>" class="<%= tab === 'paid' ? 'active' : '' %>">ชำระแล้ว (<%= counts.paid %>)</a>
         </div>
-        <!-- ===== ช่องค้นหาเลขอ้างอิง ===== -->
-        <form class="search" method="get" style="margin-bottom:12px">
+
+        <!-- ช่องค้นหา -->
+        <form class="search" method="get">
           <input type="hidden" name="tab" value="<%= tab %>">
-          <input type="search" name="q" value="<%= q %>" placeholder="🔍 ค้นหาเลขอ้างอิง / เลขออเดอร์" aria-label="ค้นหา">
+          <div class="search-input-wrap">
+            <span class="search-icon">🔍</span>
+            <input type="search" name="q" value="<%= q %>" placeholder="ค้นหาเลขอ้างอิง, เลขโต๊ะ" aria-label="ค้นหา">
+          </div>
         </form>
-        <!-- ===== รายการออเดอร์ ===== -->
+
+        <!-- รายการการ์ดออเดอร์ -->
         <div class="o-list">
-          <% if (list.length === 0) { %><p class="muted">ไม่มีรายการ</p><% } %>
+          <% if (list.length === 0) { %>
+            <p class="muted" style="text-align: center; padding: 20px 0;">ไม่มีรายการออเดอร์</p>
+          <% } %>
           <% list.forEach(function (o) { %>
             <a class="o-row <%= selected && selected.Order_ID === o.Order_ID ? 'selected' : '' %>" href="?tab=<%= tab %>&q=<%= q %>&id=<%= o.Order_ID %>">
               <div class="o-row-top">
                 <span class="o-no"><%= orderNo(o.Reference_Code) %></span>
-                <span class="badge <%= o.Payment_Status === 'ชำระแล้ว' ? 'badge-green' : 'badge-red' %>"><%= o.Payment_Status === 'ชำระแล้ว' ? 'ชำระแล้ว' : 'รอชำระเงิน' %></span>
+                <span class="badge <%= o.Payment_Status === 'ชำระแล้ว' ? 'badge-green' : 'badge-red' %>">
+                  <%= o.Payment_Status === 'ชำระแล้ว' ? 'ชำระแล้ว' : 'รอชำระเงิน' %>
+                </span>
+              </div>
+              <div class="o-row-mid">
+                <span><%= o.Item_Count %> รายการ</span>
               </div>
               <div class="o-row-bottom">
-                <span><%= o.Order_Time %> น. · <%= o.Item_Count %> รายการ · <%= o.Payment_Method === 'เงินสด' ? 'เงินสดที่เคาน์เตอร์' : 'ชำระผ่าน QR Code' %></span>
-                <b><%= baht(o.Total_Price) %> ฿</b>
+                <span><%= o.Order_Time %> น. · <%= o.Payment_Method === 'เงินสด' ? 'ชำระที่เคาน์เตอร์' : 'ชำระผ่าน QR Code' %></span>
+                <b><%= baht(o.Total_Price) %> บาท</b>
               </div>
             </a>
           <% }) %>
         </div>
       </section>
 
+      <!-- ========================================== -->
       <!-- ===== คอลัมน์ 2 : รายละเอียดออเดอร์ ===== -->
+      <!-- ========================================== -->
       <section class="panel">
         <% if (!selected) { %>
           <h3>รายละเอียดออเดอร์</h3>
-          <p class="muted">เลือกออเดอร์จากรายการด้านซ้าย</p>
+          <p class="muted" style="text-align: center; padding: 40px 0;">เลือกออเดอร์จากรายการด้านซ้ายเพื่อดูรายละเอียด</p>
         <% } else { %>
-          <div class="detail-head">
+          <div class="detail-head-wrap">
             <div>
-              <div class="muted">รายละเอียดออเดอร์ · โต๊ะ <%= selected.Table_Number %></div>
-              <span class="o-no"><%= orderNo(selected.Reference_Code) %></span>
+              <h3 style="margin-bottom: 4px;">รายละเอียดออเดอร์</h3>
+              <div class="detail-ref-title">
+                <%= orderNo(selected.Reference_Code) %>
+                <span class="badge <%= selected.Payment_Status === 'ชำระแล้ว' ? 'badge-green' : 'badge-red' %>">
+                  <%= selected.Payment_Status === 'ชำระแล้ว' ? 'ชำระแล้ว' : 'รอชำระเงิน' %>
+                </span>
+              </div>
             </div>
-            <div style="text-align:right">
-              <span class="badge <%= selected.Payment_Status === 'ชำระแล้ว' ? 'badge-green' : 'badge-red' %>"><%= selected.Payment_Status === 'ชำระแล้ว' ? 'ชำระแล้ว' : 'รอชำระเงิน' %></span>
-              <div class="muted" style="font-size:14px">🕒 <%= selected.Order_Time %> น. · <%= selected.Order_Date %></div>
+            <div class="detail-meta-text">
+              <div>🕒 <%= selected.Order_Time %> น.</div>
+              <div>📅 <%= selected.Order_Date %></div>
             </div>
           </div>
-          <h4 style="margin:8px 0">รายการอาหาร</h4>
+
+          <div class="section-subhead">รายการอาหาร</div>
           
-          <!-- ========================================================================= -->
-          <!-- [หมายเหตุถึงผู้พัฒนา]: โค้ดส่วนที่แสดงรายชื่ออาหารจะอยู่ในไฟล์ views/partials/items-table.ejs -->
-          <!-- คุณต้องเข้าไปเพิ่มโค้ดแสดง (ตัวเลือกน้ำซุป) ต่อท้ายชื่อเมนูในไฟล์นั้นแทนครับ -->
-          <!-- ========================================================================= -->
+          <!-- ตารางรายการอาหาร -->
           <%- include('../partials/items-table', { order: selected }) %>
-          
+
+          <!-- แสดงหมายเหตุ -->
+          <div class="note-box">
+            <label>หมายเหตุ</label>
+            <p><%= selected.Special_Note && selected.Special_Note.trim() !== '' ? selected.Special_Note : 'ไม่มีหมายเหตุ' %></p>
+          </div>
         <% } %>
       </section>
 
-      <!-- ===== คอลัมน์ 3 : รับชำระเงินสด ===== -->
+      <!-- ========================================== -->
+      <!-- ===== คอลัมน์ 3 : ชำระเงินสด ===== -->
+      <!-- ========================================== -->
       <section class="panel">
         <h3>ชำระเงินสด</h3>
         <% if (!selected) { %>
-          <p class="muted">ยังไม่ได้เลือกออเดอร์</p>
+          <p class="muted" style="text-align: center; padding: 40px 0;">ยังไม่ได้เลือกออเดอร์</p>
         <% } else if (selected.Payment_Status === 'ชำระแล้ว') { %>
-          <!-- ===== ข้อมูลการชำระที่เสร็จแล้ว ===== -->
-          <div class="cash-total"><span style="font-size:32px">✅</span><div><div>ชำระแล้ว (<%= selected.Payment_Method %>)</div><div class="amt"><%= baht(selected.Total_Price) %> บาท</div></div></div>
-          <table class="info-table" style="margin-top:10px">
-            <tr><td>รับเงิน</td><td><%= baht(selected.Payment_Amount) %> บาท</td></tr>
-            <tr><td>เงินทอน</td><td><%= baht(selected.Change_Amount) %> บาท</td></tr>
-            <tr><td>เลขอ้างอิงธุรกรรม</td><td style="font-size:13px"><%= selected.Transaction_Ref %></td></tr>
+          <!-- ข้อมูลกรณีชำระเงินแล้ว -->
+          <div class="cash-total-card">
+            <div class="cash-total-icon">✅</div>
+            <div class="cash-total-info">
+              <span class="cash-total-label">ชำระเรียบร้อย (<%= selected.Payment_Method %>)</span>
+              <span class="cash-total-amt"><%= baht(selected.Total_Price) %> บาท</span>
+            </div>
+          </div>
+          <table class="info-table" style="width: 100%; margin-top: 12px;">
+            <tr><td>รับเงิน</td><td style="text-align:right;"><b><%= baht(selected.Payment_Amount) %> บาท</b></td></tr>
+            <tr><td>เงินทอน</td><td style="text-align:right;"><b><%= baht(selected.Change_Amount) %> บาท</b></td></tr>
+            <tr><td>เลขอ้างอิง</td><td style="text-align:right; font-size: 13px;"><%= selected.Transaction_Ref %></td></tr>
           </table>
         <% } else { %>
-          <!-- ===== ฟอร์มรับเงิน ===== -->
-          <div class="cash-total"><span style="font-size:32px">💵</span><div><div>ยอดรวมทั้งหมด</div><div class="amt"><%= baht(selected.Total_Price) %> บาท</div></div></div>
+          <!-- การ์ดยอดรวมทั้งหมด -->
+          <div class="cash-total-card">
+            <div class="cash-total-icon">💵</div>
+            <div class="cash-total-info">
+              <span class="cash-total-label">ยอดรวมทั้งหมด</span>
+              <span class="cash-total-amt"><%= baht(selected.Total_Price) %> บาท</span>
+            </div>
+          </div>
 
-          <% if (error === 'notenough') { %><div class="alert alert-red" role="alert">จำนวนเงินที่รับไม่พอกับยอดชำระ</div><% } %>
+          <% if (error === 'notenough') { %>
+            <div class="alert alert-red" role="alert" style="margin-bottom: 12px;">
+              จำนวนเงินที่รับไม่พอกับยอดชำระ
+            </div>
+          <% } %>
 
+          <!-- ฟอร์มรับเงินสด -->
           <form method="post" action="/cashier/pay/<%= selected.Order_ID %>">
-            <label class="field-label" for="received">รับเงินจากลูกค้า</label>
-            <input class="cash-input" type="number" step="0.01" min="0" id="received" name="received" placeholder="กรอกจำนวนเงินที่รับ" required oninput="calcChange()">
-            <!-- ===== ปุ่มจำนวนเงินด่วน ===== -->
+            <label class="field-label" for="received" style="font-weight: 700; margin-bottom: 6px; display: block;">รับเงินจากลูกค้า</label>
+            <div class="input-with-unit">
+              <input class="cash-input" type="number" step="0.01" min="0" id="received" name="received" placeholder="กรอกจำนวนเงินที่รับ" required oninput="calcChange()">
+              <span class="unit-tag">บาท</span>
+            </div>
+
+            <!-- ปุ่มเงินด่วน -->
             <div class="quick-grid">
               <% [100, 200, 300, 500, 700, 1000].forEach(function (v) { %>
                 <button type="button" onclick="setAmount(<%= v %>)"><%= v.toLocaleString() %></button>
               <% }) %>
             </div>
-            <!-- ===== แสดงเงินทอน ===== -->
-            <div class="change-box" id="changeBox"><span>💰 เงินทอน</span><b id="changeText">0.00 บาท</b></div>
-            <button class="btn btn-green btn-block" type="submit" id="payBtn" disabled>✔ ยืนยันการรับเงิน</button>
+
+            <!-- กล่องแสดงเงินทอน -->
+            <div class="change-box" id="changeBox">
+              <span class="change-title"><span>🔄</span> เงินทอน</span>
+              <b id="changeText">0.00 บาท</b>
+            </div>
+
+            <!-- ปุ่มยืนยัน -->
+            <button class="btn-green-submit" type="submit" id="payBtn" disabled>
+              <span>✔</span> ยืนยันการรับเงิน
+            </button>
           </form>
 
-          <!-- ===== สคริปต์คำนวณเงินทอน ===== -->
+          <!-- สคริปต์คำนวณเงินทอนสด -->
           <script>
             const total = <%= selected.Total_Price %>;
             function setAmount(v) {

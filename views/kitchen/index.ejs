@@ -11,19 +11,19 @@
 
     <!-- ===== ตัวเลขสรุปจำนวนออเดอร์ ===== -->
     <div class="stat-row">
-      <div class="stat amber">📋 กำลังเตรียม <b><%= counts.preparing %></b> ออเดอร์</div>
-      <div class="stat green">🍲 ปรุงเสร็จแล้ว <b><%= counts.cooked %></b> ออเดอร์</div>
-      <div class="stat">✅ เสร็จสิ้นวันนี้ <b><%= counts.done %></b> ออเดอร์</div>
+      <a href="?tab=preparing" class="stat amber <%= tab === 'preparing' ? 'active' : '' %>" style="text-decoration: none; color: inherit;">
+        📋 กำลังเตรียม <b><%= counts.preparing %></b> ออเดอร์
+      </a>
+      <a href="?tab=cooked" class="stat green <%= tab === 'cooked' ? 'active' : '' %>" style="text-decoration: none; color: inherit;">
+        🍲 ปรุงเสร็จแล้ว <b><%= counts.cooked %></b> ออเดอร์
+      </a>
+      <a href="?tab=done" class="stat <%= tab === 'done' ? 'active' : '' %>" style="text-decoration: none; color: inherit;">
+        ✅ เสร็จสิ้นวันนี้ <b><%= counts.done %></b> ออเดอร์
+      </a>
     </div>
 
-    <!-- ===== แท็บกรอง + ช่องค้นหา ===== -->
+    <!-- ===== ช่องค้นหา ===== -->
     <div class="s-filter">
-      <div class="s-tabs">
-        <a href="?tab=preparing" class="<%= tab === 'preparing' ? 'active' : '' %>">กำลังเตรียม</a>
-        <a href="?tab=cooked" class="<%= tab === 'cooked' ? 'active' : '' %>">ปรุงเสร็จแล้ว</a>
-        <a href="?tab=all" class="<%= tab === 'all' ? 'active' : '' %>">ทั้งหมด</a>
-        <a href="/kitchen/status">🔄 อัปเดตสถานะออเดอร์</a>
-      </div>
       <form class="search" method="get">
         <input type="hidden" name="tab" value="<%= tab %>">
         <input type="search" name="q" value="<%= q %>" placeholder="🔍 ค้นหาเลขออเดอร์" aria-label="ค้นหาเลขออเดอร์">
@@ -46,11 +46,7 @@
             <ul class="o-items">
               <% o.items.forEach(function (it) { %>
                 <li>
-                  <span>
-                    <!-- ===== นำส่วนแสดงผล 2 น้ำซุปออก กลับมาแสดงแค่ชื่อเมนูและระดับความเผ็ด ===== -->
-                    • <%= it.Menu_Name %>
-                    <% if (it.Spiciness_Level) { %><span class="spice">🌶 <%= it.Spiciness_Level %></span><% } %>
-                  </span>
+                  <span>• <%= it.Menu_Name %> <% if (it.Spiciness_Level) { %><span class="spice">🌶 <%= it.Spiciness_Level %></span><% } %></span>
                   <span>x<%= it.Quantity %></span>
                 </li>
               <% }) %>
@@ -62,18 +58,29 @@
       </section>
 
       <!-- ===== แผงรายละเอียดออเดอร์ที่เลือก ===== -->
-      <% if (selected) { %>
+     <% if (selected) { %>
         <aside class="panel">
-          <div class="detail-head">
-            <div>
+          <div class="detail-head" style="display:flex; flex-direction:column; gap:4px">
+            <!-- แถวที่ 1: ข้อความรายละเอียดออเดอร์ (ซ้าย) + ปุ่มปิด ✕ (ขวา) -->
+            <div style="display:flex; justify-content:space-between; align-items:center; width:100%">
               <div class="muted">รายละเอียดออเดอร์ · โต๊ะ <%= selected.Table_Number %></div>
+              <a class="close-x" href="?tab=<%= tab %>" aria-label="ปิด">✕</a>
+            </div>
+
+          <!-- แถวที่ 2: หมายเลขออเดอร์ + เวลา/วันที่ ด้านขวา -->
+          <div style="display: flex; justify-content: space-between; align-items: flex-start;width: 100%;">
+            <!-- ฝั่งซ้าย: หมายเลขออเดอร์ -->
+            <div>
               <span class="o-no"><%= orderNo(selected.Reference_Code) %></span>
             </div>
-            <a class="close-x" href="?tab=<%= tab %>" aria-label="ปิด">✕</a>
+
+            <!-- ฝั่งขวา: เวลา (บน) และ วันที่ (ล่าง) -->
+            <div class="muted" style="text-align: right; font-size: 0.9em; line-height: 1.3;margin-left: auto;">
+              <div>🕒 <%= selected.Order_Time %> น.</div>
+              <div><%= selected.Order_Date %></div>
+            </div>
           </div>
-          <p class="muted" style="margin:0 0 8px">🕒 <%= selected.Order_Time %> น. · <%= selected.Order_Date %></p>
-          
-          <!-- ===== เรียกใช้ตารางแสดงรายการอาหารฝั่งขวา ===== -->
+
           <%- include('../partials/items-table', { order: selected }) %>
 
           <!-- ===== ปุ่มอัปเดตสถานะ / พิมพ์ใบเสร็จ ===== -->

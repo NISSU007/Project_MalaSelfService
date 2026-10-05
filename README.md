@@ -31,3 +31,4 @@
 - ถ้า Windows ถามเรื่อง Firewall ให้กด Allow
 - ถ้า Wi-Fi ของห้องบล็อกการเชื่อมต่อระหว่างเครื่อง ให้ใช้ ngrok (`ngrok http 3000`) แล้วเอาลิงก์ที่ได้ไปใส่ในช่องที่อยู่บนหน้า `/qr`
 "# Mala_Original" 
+"# Project_MalaSelfService" 

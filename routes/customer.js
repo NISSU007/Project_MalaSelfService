@@ -12,7 +12,6 @@ const {
 const MAX_QTY = 20;
 
 // SELECT เมนู + เช็คสต็อกจากตาราง Inventory
-// (ฐานข้อมูลมี trigger ตัดสต็อกให้อัตโนมัติเมื่อเพิ่ม/แก้/ลบ Order_Detail จึงไม่ต้องตัดสต็อกในโค้ด)
 const MENU_SELECT = `
   SELECT m.*, c.Category_Name,
          i.In_Stock_Quantity AS Stock_Left,
@@ -27,12 +26,10 @@ function isSoldOut(m) {
   return m.Is_Available === 0 || m.OutOfStock === 1;
 }
 
-// error จาก CHECK (In_Stock_Quantity >= 0) หมายถึงวัตถุดิบไม่พอ
 function isStockError(err) {
   return !!(err && err.message && err.message.indexOf('In_Stock_Quantity') !== -1);
 }
 
-// ตรวจว่าออเดอร์เป็นของโต๊ะนี้จริง
 function ownsOrder(table, order) {
   return !!(table && order && String(order.Table_ID) === String(table.Table_ID));
 }
@@ -124,7 +121,8 @@ router.post('/table/:tableId/cart/add', async (req, res) => {
   const tableId = req.params.tableId;
   let backURL = '/table/' + tableId + '/menu';
   try {
-    const { menuId, spice, note, detailId } = req.body;
+    // รับค่า soup1 และ soup2 จาก form
+    const { menuId, spice, note, detailId, soup1, soup2 } = req.body;
     const qty = Math.min(MAX_QTY, Math.max(1, parseInt(req.body.qty, 10) || 1));
     const menu = await dbGet(MENU_SELECT + ' WHERE m.Menu_ID = ?', [menuId]);
     if (!menu) return res.redirect('/table/' + tableId + '/menu');
@@ -140,14 +138,30 @@ router.post('/table/:tableId/cart/add', async (req, res) => {
       return res.redirect(backURL + 'error=spice');
     }
 
+    // ตรวจสอบว่าเป็นเมนู 2 ซุปหรือไม่ (เช็คจากชื่อเมนูมีเลข 2)
+    const isTwoSoups = isSoup && menu.Menu_Name.includes('2');
+    if (isTwoSoups && (!soup1 || !soup2)) {
+      return res.redirect(backURL + 'error=soup');
+    }
+    
+    // เพิ่มเงื่อนไขตรวจสอบการเลือกน้ำซุปซ้ำ
+    if (isTwoSoups && (soup1 === soup2)) {
+      return res.redirect(backURL + 'error=samesoup');
+    }
+
     const spiceValue = isSoup ? spice : null;
-    const soupValue = isSoup ? menu.Menu_Name : null;
+    let soupValue = isSoup ? menu.Menu_Name : null;
+    
+    // หากเป็น 2 ซุป ให้เอาชื่อซุปมาต่อกัน
+    if (isTwoSoups) {
+      soupValue = soup1 + ' + ' + soup2;
+    }
+
     const noteValue = (note || '').trim();
     const finalQty = isSoup ? 1 : qty;
 
     const cart = await getOrCreateCart(tableId);
 
-    // Subtotal เป็น generated column (Quantity * Unit_Price) ห้ามเขียนค่าเอง
     if (detailId) {
       await dbRun(
         `UPDATE Order_Detail SET Quantity = ?, Unit_Price = ?, Spiciness_Level = ?, Soup_Type = ?, Special_Note = ?
@@ -205,7 +219,6 @@ router.post('/table/:tableId/cart/update/:detailId', async (req, res) => {
     const item = await dbGet('SELECT * FROM Order_Detail WHERE Order_Detail_ID = ? AND Order_ID = ?',
       [req.params.detailId, cart.Order_ID]);
     if (item) {
-      // ซุปสั่งได้ครั้งละ 1 ที่เท่านั้น
       if (item.Soup_Type) {
         return res.redirect('/table/' + tableId + '/cart?error=soupqty');
       }
@@ -284,7 +297,6 @@ router.post('/table/:tableId/checkout', async (req, res) => {
     );
     await dbRun('UPDATE "Table" SET Table_Status = ? WHERE Table_ID = ?', ['มีลูกค้า', table.Table_ID]);
 
-    // สร้างข้อมูลในตาราง Payment ด้วยสถานะ "รอชำระ" ทันที เพื่อให้ฝั่งแคชเชียร์เห็นรายการทันที
     const pay = await dbGet('SELECT * FROM Payment WHERE Order_ID = ?', [cart.Order_ID]);
     if (!pay) {
       await dbRun(
@@ -372,7 +384,6 @@ router.post('/table/:tableId/payment/:orderId/cash', async (req, res) => {
   }
 });
 
-// ชำระด้วย QR (จำลอง) — สต็อกถูกตัดโดย trigger ตั้งแต่ตอนใส่ตะกร้าแล้ว จึงไม่ต้องตัดซ้ำ
 router.post('/table/:tableId/payment/:orderId/qr', async (req, res) => {
   const { tableId, orderId } = req.params;
   try {
@@ -436,7 +447,6 @@ router.get('/table/:tableId/orders', async (req, res) => {
   }
 });
 
-// API Polling สำหรับเช็คสถานะ
 router.get('/api/order/:orderId', async (req, res) => {
   try {
     const order = await dbGet('SELECT Order_ID, Order_Status FROM "Order" WHERE Order_ID = ?', [req.params.orderId]);

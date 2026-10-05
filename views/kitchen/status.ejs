@@ -11,21 +11,7 @@
     </div>
 
     <div class="status-layout">
-      <!-- ===== รายการออเดอร์ที่กำลังเตรียม ===== -->
-      <section class="o-list">
-        <% if (list.length === 0) { %><p class="muted">ไม่มีออเดอร์ที่กำลังเตรียม</p><% } %>
-        <% list.forEach(function (o) { %>
-          <a class="o-row <%= selected && selected.Order_ID === o.Order_ID ? 'selected' : '' %>" href="?id=<%= o.Order_ID %>">
-            <div class="o-row-top">
-              <span class="o-no"><%= orderNo(o.Reference_Code) %></span>
-              <span>โต๊ะ <%= o.Table_Number %></span>
-              <span class="muted"><%= o.Order_Time %> น.</span>
-            </div>
-            <span class="badge badge-amber"><%= o.Order_Status %></span>
-          </a>
-        <% }) %>
-      </section>
-
+      
       <!-- ===== รายละเอียด + ขั้นตอนสถานะ ===== -->
       <% if (selected) { %>
         <section class="panel">
@@ -42,12 +28,29 @@
             </ul>
           </div>
 
+          <!-- ===== เส้นคั่นสีดำจางๆ ===== -->
+        <hr style="border: 0; border-top: 1px solid #000; margin: 16px 0;">
+
           <h3>สถานะปัจจุบัน</h3>
           <% var cooked = selected.Order_Status !== STATUS.PREPARING; %>
           <ul class="vstep">
-            <li class="done"><span class="dot">✓</span>กำลังเตรียมอาหาร</li>
-            <li class="<%= cooked ? 'done' : 'now' %>"><span class="dot"><%= cooked ? '✓' : '🍳' %></span>ปรุงเสร็จสิ้น</li>
-            <li><span class="dot">•</span>พร้อมรับอาหาร</li>
+            <!-- 1. ชำระเงิน (เสร็จแล้วเสมอ) -->
+            <li class="done">
+              <span class="dot">💳</span>
+              <span class="step-label">ชำระเงิน</span>
+            </li>
+
+            <!-- 2. กำลังเตรียมอาหาร -->
+            <li class="<%= cooked ? 'done' : 'now' %>">
+              <span class="dot">🍳</span>
+              <span class="step-label">กำลังเตรียมอาหาร</span>
+            </li>
+
+            <!-- 3. พร้อมรับอาหาร -->
+            <li class="<%= cooked ? 'now' : '' %>">
+              <span class="dot"><%= cooked ? '🍲' : '•' %></span>
+              <span class="step-label">พร้อมรับอาหาร</span>
+            </li>
           </ul>
 
           <!-- ===== ปุ่มเปลี่ยนเป็นปรุงเสร็จสิ้น ===== -->

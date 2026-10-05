@@ -39,6 +39,10 @@
       <!-- ===== แจ้งเตือนข้อผิดพลาด ===== -->
       <% if (error === 'spice') { %>
         <div class="alert alert-red" role="alert">กรุณาเลือกระดับความเผ็ดก่อนเพิ่มลงตะกร้า</div>
+      <% } else if (error === 'soup') { %>
+        <div class="alert alert-red" role="alert">กรุณาเลือกน้ำซุปให้ครบทั้ง 2 ชนิด</div>
+      <% } else if (error === 'samesoup') { %>
+        <div class="alert alert-red" role="alert">ไม่สามารถเลือกประเภทน้ำซุปซ้ำกันได้</div>
       <% } else if (error === 'soldout' || menu.soldOut) { %>
         <div class="alert alert-red" role="alert">สินค้าหมด ไม่สามารถเลือกรายการนี้ได้</div>
       <% } %>
@@ -58,6 +62,34 @@
             </div>
           <% }) %>
         </div>
+        
+        <!-- ===== เลือก 2 น้ำซุป (กรณีชื่อเมนูมีเลข 2) ===== -->
+        <% if (menu.Menu_Name.includes('2')) { %>
+          <div style="margin-top: 16px;">
+            <!-- น้ำซุปที่ 1 -->
+            <label class="field-label" style="display: block; margin-bottom: 8px;">เลือกน้ำซุปที่ 1 <span class="req">* จำเป็น</span></label>
+            <select name="soup1" class="note-input" style="height: 44px; margin-bottom: 12px; padding: 0 12px;" required>
+              <option value="">-- กรุณาเลือกน้ำซุปที่ 1 --</option>
+              <option value="ซุปหม่าล่าต้นตำรับ" <%= editItem && editItem.Soup_Type && editItem.Soup_Type.split(' + ')[0] === 'ซุปหม่าล่าต้นตำรับ' ? 'selected' : '' %>>ซุปหม่าล่าต้นตำรับ</option>
+              <option value="ซุปกระดูกหมู" <%= editItem && editItem.Soup_Type && editItem.Soup_Type.split(' + ')[0] === 'ซุปกระดูกหมู' ? 'selected' : '' %>>ซุปกระดูกหมู</option>
+              <option value="ซุปมะเขือเทศ" <%= editItem && editItem.Soup_Type && editItem.Soup_Type.split(' + ')[0] === 'ซุปมะเขือเทศ' ? 'selected' : '' %>>ซุปมะเขือเทศ</option>
+              <option value="ซุปน้ำดำ" <%= editItem && editItem.Soup_Type && editItem.Soup_Type.split(' + ')[0] === 'ซุปน้ำดำ' ? 'selected' : '' %>>ซุปน้ำดำ</option>
+              <option value="ซุปเห็ดหอม" <%= editItem && editItem.Soup_Type && editItem.Soup_Type.split(' + ')[0] === 'ซุปเห็ดหอม' ? 'selected' : '' %>>ซุปเห็ดหอม</option>
+            </select>
+
+            <!-- น้ำซุปที่ 2 -->
+            <label class="field-label" style="display: block; margin-bottom: 8px;">เลือกน้ำซุปที่ 2 <span class="req">* จำเป็น</span></label>
+            <select name="soup2" class="note-input" style="height: 44px; margin-bottom: 8px; padding: 0 12px;" required>
+              <option value="">-- กรุณาเลือกน้ำซุปที่ 2 --</option>
+              <option value="ซุปหม่าล่าต้นตำรับ" <%= editItem && editItem.Soup_Type && editItem.Soup_Type.split(' + ')[1] === 'ซุปหม่าล่าต้นตำรับ' ? 'selected' : '' %>>ซุปหม่าล่าต้นตำรับ</option>
+              <option value="ซุปกระดูกหมู" <%= editItem && editItem.Soup_Type && editItem.Soup_Type.split(' + ')[1] === 'ซุปกระดูกหมู' ? 'selected' : '' %>>ซุปกระดูกหมู</option>
+              <option value="ซุปมะเขือเทศ" <%= editItem && editItem.Soup_Type && editItem.Soup_Type.split(' + ')[1] === 'ซุปมะเขือเทศ' ? 'selected' : '' %>>ซุปมะเขือเทศ</option>
+              <option value="ซุปน้ำดำ" <%= editItem && editItem.Soup_Type && editItem.Soup_Type.split(' + ')[1] === 'ซุปน้ำดำ' ? 'selected' : '' %>>ซุปน้ำดำ</option>
+              <option value="ซุปเห็ดหอม" <%= editItem && editItem.Soup_Type && editItem.Soup_Type.split(' + ')[1] === 'ซุปเห็ดหอม' ? 'selected' : '' %>>ซุปเห็ดหอม</option>
+            </select>
+          </div>
+        <% } %>
+
         <input type="hidden" name="qty" value="1">
       <% } else { %>
         <!-- ===== ตัวเลือกจำนวน ===== -->
@@ -71,7 +103,7 @@
       <% } %>
 
       <!-- ===== หมายเหตุ ===== -->
-      <label class="field-label" for="note">หมายเหตุ (ถ้ามี)</label>
+      <label class="field-label" for="note" style="margin-top: 16px; display: block;">หมายเหตุ (ถ้ามี)</label>
       <textarea class="note-input" id="note" name="note" rows="2" placeholder="เช่น ไม่ใส่ผักชี"><%= editItem ? editItem.Special_Note : '' %></textarea>
     </div>
 
@@ -85,7 +117,7 @@
   </form>
 </div>
 
-<!-- ===== สคริปต์ปรับจำนวน / ราคา ===== -->
+<!-- ===== สคริปต์ตรวจสอบซุปซ้ำ + ปรับจำนวน / ราคา ===== -->
 <script>
   const unitPrice = <%= menu.Price %>;
   function changeQty(step) {
@@ -97,6 +129,32 @@
     document.getElementById('qtyText').textContent = qty;
     document.getElementById('priceText').textContent = (qty * unitPrice).toLocaleString('th-TH');
   }
+
+  document.addEventListener('DOMContentLoaded', function() {
+    const itemForm = document.getElementById('itemForm');
+    const soup1 = document.querySelector('select[name="soup1"]');
+    const soup2 = document.querySelector('select[name="soup2"]');
+
+    // ฟังก์ชันตรวจสอบน้ำซุปซ้ำ
+    function validateSoups() {
+      if (soup1.value !== "" && soup2.value !== "" && soup1.value === soup2.value) {
+        soup2.setCustomValidity('ไม่สามารถเลือกประเภทน้ำซุปซ้ำกันได้ กรุณาเลือกน้ำซุปให้แตกต่างกัน');
+      } else {
+        soup2.setCustomValidity('');
+      }
+    }
+
+    if (itemForm && soup1 && soup2) {
+      // เช็คทุกครั้งที่มีการเปลี่ยน Dropdown
+      soup1.addEventListener('change', validateSoups);
+      soup2.addEventListener('change', validateSoups);
+
+      // เช็คซ้ำอีกรอบตอนกดปุ่ม submit
+      itemForm.addEventListener('submit', function(e) {
+        validateSoups();
+      });
+    }
+  });
 </script>
 </body>
 </html>

@@ -1,34 +1,274 @@
-/* ===== รายการออเดอร์แนวตั้ง ===== */
-.o-list { display: flex; flex-direction: column; gap: 10px; }
-.o-row { display: block; background: var(--paper); border: 1.5px solid var(--line); border-radius: var(--radius); padding: 12px 14px; }
-.o-row.selected { border: 2.5px solid var(--chili); background: #fffafa; }
-.o-row-top { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
-.o-row-bottom { display: flex; justify-content: space-between; align-items: baseline; color: var(--muted); font-size: 14px; margin-top: 2px; }
-.o-row-bottom b { font-family: var(--font-head); color: var(--ink); font-size: 20px; white-space: nowrap; }
+/* ===== โทนสีหลัก ===== */
+:root { --counter-red: #d9362b; --counter-red-dark: #b92720; --counter-red-soft: #fff1ef; --counter-red-light: #ffe3df; }
 
-/* ===== เลย์เอาต์ขั้นตอนอัปเดตสถานะ ===== */
-.status-layout { display: grid; grid-template-columns: 340px minmax(0, 1fr); gap: 18px; align-items: start; }
-.vstep { list-style: none; padding: 0; margin: 10px 0 18px; }
-.vstep li { display: flex; align-items: center; gap: 12px; padding: 10px 0; font-family: var(--font-head); font-size: 17px; color: var(--muted); position: relative; }
-.vstep li .dot { width: 34px; height: 34px; border-radius: 50%; background: #e9e4e2; display: flex; align-items: center; justify-content: center; color: #fff; font-size: 16px; flex: 0 0 34px; }
-.vstep li.done { color: var(--ink); }
-.vstep li.done .dot { background: var(--jade); }
-.vstep li.now { color: var(--ink); font-weight: 600; background: var(--amber-soft); border-radius: var(--radius-sm); padding-left: 8px; }
-.vstep li.now .dot { background: var(--amber); }
+/* ===== หน้า Counter ===== */
+.s-main { padding-bottom: 90px; }
+.s-title { font-size: 28px; font-weight: 700; letter-spacing: -.3px; margin-bottom: 4px; }
+.counter-subtitle { margin-bottom: 18px; color: var(--muted); font-size: 14px; }
 
-/* ===== ส่วนหัวและรูปอาหารหน้าเคาน์เตอร์ ===== */
-.detail-head { display: flex; justify-content: space-between; align-items: center; gap: 10px; margin-bottom: 10px; }
-.detail-head .o-no { font-size: 32px; }
-.food-visual { display: flex; gap: 16px; align-items: flex-start; margin-bottom: 8px; }
-.food-visual .plate { width: 96px; height: 96px; border: 2.5px solid var(--ink); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 48px; flex: 0 0 96px; }
+/* ===== แถบตัวกรอง ===== */
+.counter-toolbar { display: flex; align-items: stretch; gap: 12px; width: 100%; margin-bottom: 18px; }
+.counter-tabs { display: flex; gap: 8px; flex: 1; }
+.counter-tab { flex: 1; min-height: 48px; display: flex; align-items: center; justify-content: center; gap: 4px; border: 1px solid #dedede; border-radius: 11px; background: #fff; color: #444; padding: 9px 12px; font-family: var(--font-head); font-size: 14px; font-weight: 500; text-decoration: none; box-shadow: 0 2px 6px rgba(0,0,0,.04); transition: .18s ease; }
+.counter-tab:hover { border-color: var(--counter-red); color: var(--counter-red); transform: translateY(-1px); }
+.counter-tab span { font-size: 11px; opacity: .75; }
+.counter-tab.preparing-tab.active { background: #fff5d8; border-color: #e5b32d; color: #8b5b00; }
+.counter-tab.cooked-tab.active { background: var(--counter-red); border-color: var(--counter-red); color: #fff; box-shadow: 0 4px 12px rgba(217,54,43,.22); }
+.counter-tab.done-tab.active { background: #f2f2f2; border-color: #999; color: #555; }
 
-/* ===== แถบเมนูล่างสำหรับพนักงาน ===== */
-.s-bottom-nav { position: fixed; left: 0; right: 0; bottom: 0; background: var(--paper); border-top: 2px solid var(--ink); display: grid; grid-template-columns: repeat(3, 1fr); z-index: 20; }
-.s-bottom-nav a { padding: 12px 8px; text-align: center; font-family: var(--font-head); font-size: 16px; color: var(--muted); display: flex; justify-content: center; align-items: center; gap: 6px; }
-.s-bottom-nav a.active { color: var(--chili); background: var(--chili-soft); font-weight: 600; }
-.nav-count { background: var(--chili); color: #fff; border-radius: 999px; font-size: 12px; padding: 0 7px; }
+/* ===== ช่องค้นหา ===== */
+.counter-search { width: 245px; display: flex; align-items: center; gap: 8px; border: 1px solid #d7d7d7; border-radius: 11px; background: #fff; padding: 0 14px; box-shadow: 0 2px 6px rgba(0,0,0,.04); }
+.counter-search input { width: 100%; border: 0; outline: 0; background: transparent; color: var(--ink); font-family: var(--font-body); font-size: 13px; }
+.counter-search:focus-within { border-color: var(--counter-red); box-shadow: 0 0 0 3px rgba(217,54,43,.09); }
 
-/* ===== Responsive สำหรับเคาน์เตอร์ ===== */
-@media (max-width: 820px) {
-  .status-layout { grid-template-columns: 1fr; }
+/* ===== Grid ออเดอร์ ===== */
+.order-grid { display: grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap: 16px; align-items: stretch; }
+
+/* ===== Card ออเดอร์ ===== */
+.o-card { position: relative; overflow: hidden; box-sizing: border-box; height: 310px; min-height: 310px; display: flex; flex-direction: column; background: #fff; border: 1px solid #e0e0e0; border-radius: 15px; padding: 15px; box-shadow: 0 4px 14px rgba(0,0,0,.055); transition: transform .18s ease, box-shadow .18s ease, border-color .18s ease; }
+.o-card::before { content: ""; position: absolute; left: 0; top: 0; width: 100%; height: 4px; background: var(--counter-red); }
+.o-card:hover { transform: translateY(-2px); box-shadow: 0 9px 22px rgba(217,54,43,.11); border-color: #e7b0ac; }
+.o-card.selected { border: 2px solid var(--counter-red); box-shadow: 0 8px 22px rgba(217,54,43,.16); }
+.o-card.selected::before { background: var(--counter-red-dark); }
+
+/* ===== หัวออเดอร์ ===== */
+.o-card-head { flex: 0 0 auto; display: flex; align-items: flex-start; justify-content: space-between; gap: 10px; padding-bottom: 11px; border-bottom: 1px solid #eeeeee; }
+.o-no { color: #222; font-family: var(--font-head); font-size: 24px; font-weight: 700; line-height: 1; letter-spacing: .3px; }
+.o-table { display: inline-block; margin-top: 6px; padding: 3px 8px; border-radius: 999px; background: var(--counter-red-soft); color: var(--counter-red); font-size: 11px; font-weight: 500; }
+.o-time { padding-top: 2px; color: #888; font-size: 11px; white-space: nowrap; }
+
+/* ===== รายการอาหาร ===== */
+.o-items { flex: 1; min-height: 0; display: flex; flex-direction: column; gap: 6px; margin: 11px 0 10px; overflow: hidden; }
+.food-item { flex: 0 0 54px; display: flex; align-items: center; gap: 9px; box-sizing: border-box; min-height: 54px; padding: 5px 7px; border: 1px solid #eeeeee; border-radius: 10px; background: #fafafa; }
+.food-image { width: 45px; height: 45px; flex: 0 0 45px; overflow: hidden; display: flex; align-items: center; justify-content: center; border-radius: 8px; background: #f1f1f1; font-size: 22px; }
+.food-image img { width: 100%; height: 100%; object-fit: cover; }
+.food-info { flex: 1; min-width: 0; }
+.food-name { overflow: hidden; color: #333; font-size: 12px; font-weight: 600; line-height: 1.35; text-overflow: ellipsis; white-space: nowrap; }
+.food-spice { margin-top: 2px; color: var(--counter-red); font-size: 10px; }
+.food-qty { min-width: 28px; color: #555; font-size: 12px; font-weight: 700; text-align: right; }
+
+/* ===== ส่วนล่าง Card ===== */
+.o-actions { flex: 0 0 31px; display: flex; align-items: center; justify-content: space-between; gap: 8px; padding-top: 3px; }
+.order-status { display: inline-flex; align-items: center; justify-content: center; height: 29px; box-sizing: border-box; padding: 0 12px; border-radius: 999px; font-family: var(--font-head); font-size: 11px; font-weight: 600; white-space: nowrap; }
+.status-preparing { background: #fff3ce; color: #966000; border: 1px solid #f0d27e; }
+.status-cooked { background: #eaf7ee; color: #267a47; border: 1px solid #b9dfc6; }
+.status-ready { background: #eaf7ee; color: #267a47; border: 1px solid #b9dfc6; }
+.status-done { background: #f0f0f0; color: #666; border: 1px solid #d8d8d8; }
+
+/* ===== ปุ่มรายละเอียด ===== */
+.detail-btn { display: inline-flex; align-items: center; justify-content: center; height: 29px; box-sizing: border-box; padding: 0 14px; border: 1px solid var(--counter-red); border-radius: 999px; background: #fff; color: var(--counter-red); font-family: var(--font-head); font-size: 11px; font-weight: 600; text-decoration: none; transition: .18s ease; }
+.detail-btn:hover { background: var(--counter-red); color: #fff; }
+
+/* ===== Panel รายละเอียด Counter ===== */
+.s-layout.has-side { display: grid; grid-template-columns: minmax(0,1.2fr) minmax(360px,.8fr); gap: 20px; align-items: start; }
+.counter-detail-panel { position: sticky; top: 18px; overflow: hidden; min-height: 0; padding: 0; background: #fff; border: 1px solid #e4e4e4; border-radius: 18px; box-shadow: 0 8px 24px rgba(0,0,0,.07); }
+.detail-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; padding: 18px 20px 16px; background: linear-gradient(135deg,#fff7f5 0%,#fff 65%); border-bottom: 1px solid #f0e3e1; }
+.detail-title { color: #777; font-family: var(--font-head); font-size: 13px; font-weight: 500; letter-spacing: .2px; }
+.detail-order-no { margin-top: 6px; color: var(--counter-red); font-family: var(--font-head); font-size: 32px; font-weight: 700; line-height: 1; letter-spacing: .5px; }
+.detail-table { display: inline-block; margin-top: 8px; padding: 5px 11px; border-radius: 999px; background: #fff0ed; color: var(--counter-red); font-size: 11px; font-weight: 500; }
+.close-x { display: flex; align-items: center; justify-content: center; width: 34px; height: 34px; flex: 0 0 34px; border-radius: 50%; background: #fff; border: 1px solid #ead8d5; color: var(--counter-red); font-size: 17px; line-height: 1; text-decoration: none; transition: .2s ease; }
+.close-x:hover { background: var(--counter-red); border-color: var(--counter-red); color: #fff; transform: rotate(90deg); }
+
+/* ===== ตารางรายการอาหาร ===== */
+.counter-detail-panel .items-table { width: calc(100% - 40px); margin: 17px 20px 0; border-collapse: separate; border-spacing: 0 6px; font-size: 12px; }
+.counter-detail-panel .items-table th { padding: 0 7px 6px; background: transparent; border: 0; color: #999; font-size: 10px; font-weight: 500; text-align: left; }
+.counter-detail-panel .items-table td { padding: 9px 7px; background: #fafafa; border-top: 1px solid #f0f0f0; border-bottom: 1px solid #f0f0f0; }
+.counter-detail-panel .items-table td:first-child { border-left: 1px solid #f0f0f0; border-radius: 9px 0 0 9px; }
+.counter-detail-panel .items-table td:last-child { border-right: 1px solid #f0f0f0; border-radius: 0 9px 9px 0; }
+
+/* ===== กล่องสรุป ===== */
+.detail-summary { margin: 18px 20px 0; padding: 13px 15px; border: 1px solid #f0d8d5; border-radius: 12px; background: #fff8f7; }
+.detail-summary-row { display: flex; align-items: center; justify-content: space-between; color: #777; font-size: 11px; }
+.detail-summary-total { margin-top: 7px; padding-top: 9px; border-top: 1px dashed #e7c8c4; display: flex; align-items: center; justify-content: space-between; }
+.detail-summary-total span { color: #555; font-family: var(--font-head); font-size: 13px; font-weight: 600; }
+.detail-summary-total b { color: var(--counter-red); font-family: var(--font-head); font-size: 20px; }
+
+/* ===== สถานะ ===== */
+.detail-status-box { display: flex; align-items: center; justify-content: space-between; margin: 18px 20px 0; padding: 12px 14px; border: 1px solid #eeeeee; border-radius: 12px; background: #fff; box-shadow: 0 2px 7px rgba(0,0,0,.025); color: #777; font-size: 11px; }
+.status-text-preparing { color: #a06900; }
+.status-text-cooked { color: #26804b; }
+.status-text-ready { color: #26804b; }
+.status-text-done { color: #666; }
+
+/* ===== ปุ่มอัปเดตสถานะ ===== */
+.detail-update-btn { display: flex; align-items: center; justify-content: center; margin: 18px 20px 20px; min-height: 44px; box-sizing: border-box; border-radius: 11px; background: var(--counter-red); color: #fff; font-family: var(--font-head); font-size: 13px; font-weight: 600; text-decoration: none; box-shadow: 0 6px 14px rgba(217,54,43,.18); transition: .2s ease; }
+.detail-update-btn:hover { background: var(--counter-red-dark); transform: translateY(-1px); }
+
+/* ===== Empty ===== */
+.empty-order { grid-column: 1 / -1; min-height: 250px; display: flex; flex-direction: column; align-items: center; justify-content: center; border: 1px dashed #d6d6d6; border-radius: 16px; background: #fff; color: #999; }
+.empty-icon { margin-bottom: 8px; font-size: 40px; opacity: .65; }
+.empty-order p { margin: 0; font-size: 13px; }
+
+/* ===== Bottom Navigation ===== */
+.s-bottom-nav { position: fixed; left: 0; right: 0; bottom: 0; z-index: 20; display: grid; grid-template-columns: repeat(2,1fr); overflow: hidden; background: rgba(255,255,255,.98); border-top: 1px solid #dedede; box-shadow: 0 -4px 15px rgba(217,54,43,.08); }
+.s-bottom-nav a { position: relative; display: flex; align-items: center; justify-content: center; gap: 6px; min-height: 52px; color: #777; font-family: var(--font-head); font-size: 14px; text-decoration: none; transition: .18s ease; }
+.s-bottom-nav a.active { color: var(--counter-red); background: var(--counter-red-soft); font-weight: 600; }
+.s-bottom-nav a.active::before { content: ""; position: absolute; left: 25%; right: 25%; top: 0; height: 3px; border-radius: 0 0 5px 5px; background: var(--counter-red); }
+.nav-count { min-width: 18px; padding: 2px 6px; border-radius: 999px; background: var(--counter-red); color: #fff; font-size: 10px; text-align: center; }
+
+/* ===== หน้าอัปเดตสถานะ ===== */
+.status-page { display: flex; flex-direction: column; align-items: center; }
+.status-page-title { width: 100%; max-width: 760px; display: flex; align-items: center; justify-content: center; gap: 10px; margin-bottom: 18px; }
+.status-page-title .s-title { margin: 0; }
+.status-page-icon { color: var(--counter-red); font-size: 28px; font-weight: 700; transform: rotate(-45deg); }
+.status-result-card { width: 100%; max-width: 760px; box-sizing: border-box; overflow: hidden; background: #fff; border: 1px solid #dcdcdc; border-radius: 14px; box-shadow: 0 4px 15px rgba(0,0,0,.06); }
+.status-order-header { display: flex; align-items: center; justify-content: space-between; gap: 15px; padding: 17px 20px 14px; }
+.status-order-left { display: flex; align-items: center; gap: 12px; }
+.status-order-no { color: #111; font-family: var(--font-head); font-size: 34px; font-weight: 700; line-height: 1; letter-spacing: 1px; }
+.status-table { padding: 5px 11px; border-radius: 999px; background: #f4f4f4; color: #777; font-size: 12px; }
+.status-cooked-badge { padding: 7px 18px; border-radius: 999px; background: #77cf3b; color: #fff; font-family: var(--font-head); font-size: 12px; font-weight: 600; }
+.status-food-detail { display: flex; align-items: flex-start; gap: 20px; padding: 10px 25px 18px; }
+.status-food-image { width: 125px; height: 125px; flex: 0 0 125px; display: flex; align-items: center; justify-content: center; border: 2px solid #222; border-radius: 12px; background: #fff; font-size: 65px; }
+.status-food-content { flex: 1; padding-top: 7px; }
+.status-food-row { display: flex; align-items: flex-start; justify-content: space-between; gap: 15px; padding: 3px 0; color: #333; font-size: 13px; }
+.status-food-name { display: flex; flex-direction: column; }
+.status-food-name small { margin-top: 2px; color: var(--counter-red); font-size: 10px; }
+.status-food-quantity { min-width: 30px; color: #555; font-size: 12px; font-weight: 600; text-align: right; }
+.status-divider { height: 1px; background: #dcdcdc; }
+.status-current-title { padding: 13px 20px 5px; color: #555; font-family: var(--font-head); font-size: 15px; }
+.status-timeline { padding: 5px 20px 10px; }
+.status-step { display: flex; align-items: center; gap: 13px; min-height: 42px; }
+.status-step-dot { width: 36px; height: 36px; display: flex; align-items: center; justify-content: center; flex: 0 0 36px; border-radius: 50%; background: #f0f0f0; color: #fff; font-size: 17px; font-weight: 700; }
+.status-step.done .status-step-dot { background: #16876c; }
+.status-step.current .status-step-dot { background: #f2a31a; box-shadow: 0 0 0 8px #fff9df; color: #fff; }
+.status-step-text strong { color: #555; font-family: var(--font-head); font-size: 14px; font-weight: 500; }
+.status-line { width: 2px; height: 18px; margin-left: 17px; background: #dedede; }
+.status-line.done { background: #16876c; }
+.status-submit-form { padding: 8px 20px 10px; }
+.status-submit-btn { width: 100%; min-height: 43px; border: 0; border-radius: 999px; background: #f35454; color: #fff; font-family: var(--font-head); font-size: 14px; font-weight: 500; cursor: pointer; box-shadow: 0 4px 10px rgba(243,84,84,.16); transition: .18s ease; }
+.status-submit-btn:hover { background: #df4141; transform: translateY(-1px); }
+.status-finished { margin: 8px 20px 10px; padding: 11px; border: 1px solid #b9dfc6; border-radius: 999px; background: #effaf2; color: #267a47; font-size: 12px; font-weight: 600; text-align: center; }
+.status-back-btn { display: flex; align-items: center; justify-content: center; min-height: 42px; box-sizing: border-box; margin: 0 20px 20px; border: 1px solid #d6d6d6; border-radius: 10px; background: #fff; color: #666; font-family: var(--font-head); font-size: 12px; font-weight: 500; text-decoration: none; transition: .18s ease; }
+.status-back-btn:hover { border-color: var(--counter-red); background: var(--counter-red-soft); color: var(--counter-red); }
+.status-no-order { width: 100%; max-width: 500px; box-sizing: border-box; padding: 45px 30px; border: 1px solid #e0e0e0; border-radius: 16px; background: #fff; text-align: center; box-shadow: 0 4px 15px rgba(0,0,0,.05); }
+.status-no-order > div { font-size: 45px; }
+.status-no-order p { margin: 8px 0 18px; color: #777; }
+
+/* ===================================================== */
+/* ===== หน้าแจ้งเตือนลูกค้า ===== */
+/* ===================================================== */
+
+.notify-page { width: 100%; max-width: none; margin: 0; padding: 0 20px 90px; box-sizing: border-box; }
+.notify-page-head { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 20px; }
+.notify-page-subtitle { margin: 4px 0 0; color: #888; font-size: 13px; }
+
+/* ===== แจ้งเตือนสำเร็จ ===== */
+.notify-success { display: flex; align-items: center; gap: 12px; width: 100%; box-sizing: border-box; margin-bottom: 18px; padding: 14px 18px; border: 1px solid #b9dfc6; border-radius: 13px; background: #effaf2; color: #267a47; }
+.notify-success-icon { width: 30px; height: 30px; display: flex; align-items: center; justify-content: center; flex: 0 0 30px; border-radius: 50%; background: #267a47; color: #fff; font-size: 15px; font-weight: 700; }
+.notify-success strong { display: block; font-size: 13px; }
+.notify-success span:last-child { display: block; margin-top: 2px; color: #5f8b6c; font-size: 11px; }
+
+/* ===== Layout แจ้งเตือน ===== */
+.notify-layout { width: 100%; max-width: none; margin: 0; display: grid; grid-template-columns: minmax(0,1.25fr) minmax(390px,.75fr); gap: 20px; align-items: start; }
+.notify-order-list { width: 100%; min-width: 0; }
+
+/* ===== หัวรายการ ===== */
+.notify-list-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
+.notify-list-head h2 { margin: 0; color: #222; font-family: var(--font-head); font-size: 17px; }
+.notify-list-head p { margin: 3px 0 0; color: #999; font-size: 11px; }
+.notify-count { padding: 6px 11px; border-radius: 999px; background: var(--counter-red-soft); color: var(--counter-red); font-size: 11px; font-weight: 600; }
+
+/* ===== Card ออเดอร์ ===== */
+.notify-order-card { display: block; width: 100%; box-sizing: border-box; margin-bottom: 10px; padding: 16px 18px; border: 1px solid #e3e3e3; border-radius: 14px; background: #fff; color: inherit; text-decoration: none; box-shadow: 0 3px 10px rgba(0,0,0,.035); transition: .18s ease; }
+.notify-order-card:hover { border-color: #e0aaa5; box-shadow: 0 7px 18px rgba(217,54,43,.09); transform: translateY(-1px); }
+.notify-order-card.selected { border: 2px solid var(--counter-red); background: #fffafa; box-shadow: 0 7px 20px rgba(217,54,43,.12); }
+.notify-order-top { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.notify-order-no { color: var(--counter-red); font-family: var(--font-head); font-size: 24px; font-weight: 700; line-height: 1; }
+.notify-table { display: inline-block; margin-top: 6px; padding: 4px 9px; border-radius: 999px; background: var(--counter-red-soft); color: var(--counter-red); font-size: 10px; }
+.notify-ready-badge { padding: 6px 11px; border: 1px solid #b9dfc6; border-radius: 999px; background: #eaf7ee; color: #267a47; font-size: 10px; font-weight: 600; white-space: nowrap; }
+.notify-order-bottom { display: flex; align-items: center; justify-content: space-between; margin-top: 12px; padding-top: 10px; border-top: 1px solid #f0f0f0; color: #999; font-size: 11px; }
+.notify-arrow { color: var(--counter-red); font-weight: 600; }
+
+/* ===== Empty ===== */
+.notify-empty { min-height: 280px; display: flex; flex-direction: column; align-items: center; justify-content: center; border: 1px dashed #d8d8d8; border-radius: 16px; background: #fff; text-align: center; }
+.notify-empty-icon { margin-bottom: 10px; font-size: 42px; opacity: .6; }
+.notify-empty strong { color: #555; font-size: 14px; }
+.notify-empty span { margin-top: 4px; color: #999; font-size: 11px; }
+
+/* ===== Detail Panel แจ้งเตือน ===== */
+.notify-detail-panel { position: sticky; top: 18px; width: 100%; box-sizing: border-box; overflow: hidden; min-height: 0; background: #fff; border: 1px solid #e3e3e3; border-radius: 18px; box-shadow: 0 8px 24px rgba(0,0,0,.07); }
+.notify-detail-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; padding: 18px 20px 16px; background: linear-gradient(135deg,#fff7f5 0%,#fff 68%); border-bottom: 1px solid #f0e3e1; }
+.notify-detail-label { color: #888; font-family: var(--font-head); font-size: 12px; }
+.notify-detail-number { margin-top: 6px; color: var(--counter-red); font-family: var(--font-head); font-size: 32px; font-weight: 700; line-height: 1; }
+.notify-detail-table { display: inline-block; margin-top: 8px; padding: 5px 11px; border-radius: 999px; background: #fff0ed; color: var(--counter-red); font-size: 11px; }
+
+/* ===== สถานะปัจจุบัน ===== */
+.notify-current-status { display: inline-flex; align-items: center; justify-content: center; min-height: 34px; padding: 0 13px; border: 1px solid #b9dfc6; border-radius: 999px; background: #eaf7ee; color: #267a47; font-family: var(--font-head); font-size: 11px; font-weight: 600; white-space: nowrap; }
+
+/* ===== รายการอาหาร ===== */
+.notify-food-section { padding: 18px 20px 0; }
+.notify-section-title { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; color: #555; font-family: var(--font-head); font-size: 13px; font-weight: 600; }
+.notify-section-title span:last-child { color: #999; font-family: var(--font-body); font-size: 10px; font-weight: 400; }
+.notify-food-list { display: flex; flex-direction: column; gap: 6px; }
+.notify-food-item { display: flex; align-items: center; gap: 10px; padding: 8px; border: 1px solid #eeeeee; border-radius: 10px; background: #fafafa; }
+.notify-food-icon { width: 34px; height: 34px; display: flex; align-items: center; justify-content: center; flex: 0 0 34px; border-radius: 8px; background: #f1f1f1; font-size: 17px; }
+.notify-food-info { flex: 1; min-width: 0; }
+.notify-food-info strong { display: block; overflow: hidden; color: #333; font-size: 11px; text-overflow: ellipsis; white-space: nowrap; }
+.notify-food-info span { display: block; margin-top: 2px; color: var(--counter-red); font-size: 9px; }
+.notify-food-qty { color: #555; font-size: 12px; font-weight: 700; }
+
+/* ===== กล่องแจ้งเตือน ===== */
+.notify-status-box { display: flex; align-items: center; gap: 12px; margin: 18px 20px 0; padding: 13px; border: 1px solid #f0d8d5; border-radius: 12px; background: #fff8f7; }
+.notify-status-icon { width: 38px; height: 38px; display: flex; align-items: center; justify-content: center; flex: 0 0 38px; border-radius: 50%; background: #ffe7e3; font-size: 18px; }
+.notify-status-info strong { display: block; color: #444; font-family: var(--font-head); font-size: 12px; }
+.notify-status-info span { display: block; margin-top: 3px; color: #999; font-size: 10px; }
+.notify-status-info b { color: var(--counter-red); }
+
+/* ===== ปุ่ม ===== */
+.notify-actions { display: flex; flex-direction: column; gap: 8px; margin: 18px 20px 20px; }
+.notify-actions form { margin: 0; }
+.notify-remind-btn { width: 100%; min-height: 44px; border: 0; border-radius: 11px; background: var(--counter-red); color: #fff; font-family: var(--font-head); font-size: 12px; font-weight: 600; cursor: pointer; box-shadow: 0 6px 14px rgba(217,54,43,.18); transition: .18s ease; }
+.notify-remind-btn:hover { background: var(--counter-red-dark); transform: translateY(-1px); }
+.notify-complete-btn { width: 100%; min-height: 44px; border: 1px solid #d8d8d8; border-radius: 11px; background: #fff; color: #555; font-family: var(--font-head); font-size: 12px; font-weight: 600; cursor: pointer; transition: .18s ease; }
+.notify-complete-btn:hover { border-color: #267a47; background: #effaf2; color: #267a47; }
+
+/* ===================================================== */
+/* ===== Responsive ===== */
+/* ===================================================== */
+
+@media (max-width: 1200px) {
+  .s-layout.has-side { grid-template-columns: minmax(0,1.15fr) minmax(340px,.85fr); gap: 16px; }
+  .counter-detail-panel { border-radius: 16px; }
+  .detail-order-no { font-size: 29px; }
+  .counter-detail-panel .items-table { width: calc(100% - 32px); margin-left: 16px; margin-right: 16px; }
+  .detail-summary { margin-left: 16px; margin-right: 16px; }
+  .detail-status-box { margin-left: 16px; margin-right: 16px; }
+  .detail-update-btn { margin-left: 16px; margin-right: 16px; }
+  .detail-head { padding-left: 16px; padding-right: 16px; }
+  .notify-layout { grid-template-columns: minmax(0,1.15fr) minmax(360px,.85fr); gap: 16px; }
+}
+
+@media (max-width: 1000px) {
+  .s-layout.has-side { grid-template-columns: minmax(0,1fr) 350px; gap: 14px; }
+  .o-card { height: 300px; min-height: 300px; }
+  .food-item { flex-basis: 51px; min-height: 51px; }
+  .food-image { width: 42px; height: 42px; flex-basis: 42px; }
+  .notify-layout { grid-template-columns: minmax(0,1fr) 360px; gap: 14px; }
+}
+
+@media (max-width: 900px) {
+  .counter-toolbar { flex-direction: column; }
+  .counter-search { width: auto; min-height: 45px; }
+  .s-layout.has-side { grid-template-columns: 1fr; }
+  .counter-detail-panel { position: static; }
+  .notify-layout { grid-template-columns: 1fr; }
+  .notify-detail-panel { position: static; }
+}
+
+@media (max-width: 650px) {
+  .counter-tabs { flex-direction: column; }
+  .counter-tab { flex: none; min-height: 44px; }
+  .order-grid { grid-template-columns: 1fr; }
+  .o-card { height: 310px; min-height: 310px; }
+  .s-title { font-size: 23px; }
+  .status-page-title { justify-content: flex-start; }
+  .status-order-header { align-items: flex-start; flex-direction: column; }
+  .status-order-no { font-size: 29px; }
+  .status-food-detail { gap: 12px; padding-left: 15px; padding-right: 15px; }
+  .status-food-image { width: 90px; height: 90px; flex-basis: 90px; font-size: 45px; }
+  .notify-page { padding-left: 12px; padding-right: 12px; }
+  .notify-order-top { align-items: flex-start; flex-direction: column; }
+  .notify-ready-badge { align-self: flex-start; }
+  .notify-detail-number { font-size: 28px; }
+  .notify-current-status { font-size: 10px; padding: 0 10px; }
 }
