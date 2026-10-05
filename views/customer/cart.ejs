@@ -15,6 +15,8 @@
       <div class="alert alert-red" role="alert">ตะกร้าว่างเปล่า กรุณาเลือกอาหารก่อนยืนยันคำสั่งซื้อ</div>
     <% } else if (error === 'expired') { %>
       <div class="alert alert-red" role="alert">เซสชันการสั่งซื้อหมดอายุ รหัสอ้างอิงถูกยกเลิกแล้ว กรุณายืนยันคำสั่งซื้ออีกครั้ง</div>
+    <% } else if (error === 'nosoup' || (typeof missingSoup !== 'undefined' && missingSoup)) { %>
+      <div class="alert alert-red" role="alert">คุณได้เลือกรายการวัตถุดิบ กรุณาเลือก "น้ำซุป" อย่างน้อย 1 รายการก่อนยืนยันคำสั่งซื้อ</div>
     <% } %>
   </div>
 
@@ -73,8 +75,9 @@
   <div class="total-row"><span>ยอดรวมทั้งหมด</span><strong><%= baht(total) %> บาท</strong></div>
 
   <!-- ===== ปุ่มยืนยันคำสั่งซื้อ ===== -->
+  <% const isBtnDisabled = items.length === 0 || (typeof missingSoup !== 'undefined' && missingSoup); %>
   <form class="bottom-bar" method="post" action="/table/<%= table.Table_ID %>/cart/confirm">
-    <button class="bar-btn" type="submit" <%= items.length === 0 ? 'disabled' : '' %> style="justify-content:center">ยืนยันคำสั่งซื้อ</button>
+    <button class="bar-btn" type="submit" <%= isBtnDisabled ? 'disabled' : '' %> style="justify-content:center">ยืนยันคำสั่งซื้อ</button>
   </form>
 </div>
 </body>

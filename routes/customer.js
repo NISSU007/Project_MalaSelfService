@@ -205,7 +205,13 @@ router.get('/table/:tableId/cart', async (req, res) => {
     const cart = await getCart(table.Table_ID);
     const items = cart ? await getOrderItems(cart.Order_ID) : [];
     const total = items.reduce((sum, it) => sum + it.Subtotal, 0);
-    res.render('customer/cart', { table, cart, items, total, error: req.query.error });
+
+    // ตรวจสอบเงื่อนไขวัตถุดิบและน้ำซุปโดยใช้ groupOf
+    const hasIngredient = items.some(it => groupOf(it.Category_Name) === 'raw' || it.Category_Name === 'วัตถุดิบ');
+    const hasSoup = items.some(it => groupOf(it.Category_Name) === 'soup' || it.Category_Name === 'ซุป' || !!it.Soup_Type);
+    const missingSoup = hasIngredient && !hasSoup;
+
+    res.render('customer/cart', { table, cart, items, total, missingSoup, error: req.query.error });
   } catch (err) {
     res.status(500).send(err.message);
   }
@@ -260,6 +266,15 @@ router.post('/table/:tableId/cart/confirm', async (req, res) => {
     const cart = await getCart(tableId);
     const items = cart ? await getOrderItems(cart.Order_ID) : [];
     if (items.length === 0) return res.redirect('/table/' + tableId + '/cart?error=empty');
+
+    // ตรวจสอบเงื่อนไข: หากมีวัตถุดิบ ต้องมีน้ำซุปด้วย
+    const hasIngredient = items.some(it => groupOf(it.Category_Name) === 'raw' || it.Category_Name === 'วัตถุดิบ');
+    const hasSoup = items.some(it => groupOf(it.Category_Name) === 'soup' || it.Category_Name === 'ซุป' || !!it.Soup_Type);
+    
+    if (hasIngredient && !hasSoup) {
+      return res.redirect('/table/' + tableId + '/cart?error=nosoup');
+    }
+
     res.redirect('/table/' + tableId + '/summary');
   } catch (err) {
     res.status(500).send(err.message);
