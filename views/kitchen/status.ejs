@@ -5,19 +5,19 @@
 
   <main class="s-main">
     <!-- ===== หัวข้อหน้าอัปเดตสถานะ ===== -->
-    <div class="page-top" style="padding:0 0 14px">
-      <a class="back" href="/kitchen" aria-label="กลับไปหน้าออเดอร์ที่ต้องปรุง">←</a>
-      <h1 class="s-title" style="margin:0">อัปเดตสถานะออเดอร์</h1>
+    <div class="page-top" style="padding:0 0 14px; display: flex; align-items: center; gap: 12px;">
+      <a class="back" href="/kitchen" aria-label="กลับไปหน้าออเดอร์ที่ต้องปรุง" style="text-decoration: none; font-size: 24px; color: #333;">←</a>
+      <h1 class="s-title" style="margin:0;">อัปเดตสถานะออเดอร์</h1>
     </div>
 
     <div class="status-layout">
       
       <!-- ===== รายละเอียด + ขั้นตอนสถานะ ===== -->
       <% if (selected) { %>
-        <section class="panel" style="padding: 24px; border-radius: 16px; background: #fff; box-shadow: 0 2px 10px rgba(0,0,0,0.05);">
+        <section class="panel" style="padding: 24px; border-radius: 16px; background: #fff; box-shadow: 0 2px 10px rgba(0,0,0,0.05); max-width: 900px; margin: 0 auto; width: 100%;">
           
-          <!-- ส่วนหัว: หมายเลขออเดอร์ และ โต๊ะ -->
-          <div class="detail-head" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px;">
+          <!-- ส่วนหัว: หมายเลขออเดอร์ และ โต๊ะ (ซ้าย) -> สถานะ (ขวา) -->
+          <div style="display: flex; flex-direction: row; justify-content: space-between; align-items: center; margin-bottom: 24px;">
             <div style="display: flex; align-items: center; gap: 12px;">
               <span class="o-no" style="font-size: 36px; font-weight: 900; letter-spacing: 1px;"><%= orderNo(selected.Reference_Code) %></span>
               <span style="background: #f0f0f0; color: #555; padding: 4px 14px; border-radius: 20px; font-size: 14px; font-weight: 600;">โต๊ะ <%= selected.Table_Number %></span>
@@ -91,8 +91,8 @@
                 <span class="dot" style="position: absolute; left: -15px; top: 2px; width: 28px; height: 28px; border-radius: 50%; background-color: #ccc; color: white; display: flex; align-items: center; justify-content: center;"></span>
                 <span class="step-label" style="color: #888; font-size: 16px;">พร้อมเสิร์ฟ</span>
               <% } else { %>
-                <!-- ปรุงเสร็จแล้ว/กำลังรอเสิร์ฟ (สีส้ม + ไฮไลท์เหลือง) -->
-                <span class="dot" style="position: absolute; left: -15px; top: 2px; width: 28px; height: 28px; border-radius: 50%; background-color: #f39c12; color: white; display: flex; align-items: center; justify-content: center; font-size: 14px; box-shadow: 0 2px 6px rgba(243, 156, 18, 0.4);">🍲</span>
+                <!-- ปรุงเสร็จแล้ว/กำลังรอเสิร์ฟ (สีส้ม + ไฮไลท์เหลือง เปลี่ยนไอคอนให้ตรงกับหน้าเคาน์เตอร์) -->
+                <span class="dot" style="position: absolute; left: -15px; top: 2px; width: 28px; height: 28px; border-radius: 50%; background-color: #f39c12; color: white; display: flex; align-items: center; justify-content: center; font-size: 14px; box-shadow: 0 2px 6px rgba(243, 156, 18, 0.4);">🛎️</span>
                 <span style="display: inline-block; background: #fff3ce; padding: 6px 18px; border-radius: 20px; color: #333; font-weight: 700; font-size: 15px;">พร้อมเสิร์ฟ</span>
               <% } %>
             </li>

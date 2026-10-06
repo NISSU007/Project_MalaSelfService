@@ -7,6 +7,13 @@
     <!-- ===== หัวข้อหน้าออเดอร์ที่พร้อมเสิร์ฟ ===== -->
     <h1 class="s-title">แสดงออเดอร์ที่พร้อมเสิร์ฟ</h1>
 
+    <!-- แถบแสดงข้อความแจ้งเตือนเมื่ออัปเดตสถานะสำเร็จ -->
+    <% if (typeof success !== 'undefined' && success) { %>
+      <div class="alert alert-green" role="status" style="margin-bottom: 20px;">
+        ✔ ออเดอร์ #<%= success %> พร้อมเสิร์ฟ ส่งแจ้งเตือนไปที่หน้าจอลูกค้าแล้ว
+      </div>
+    <% } %>
+
     <!-- ===== แถบตัวกรองสถานะ + ช่องค้นหา ===== -->
     <div class="counter-toolbar">
       <div class="counter-tabs">

@@ -2,7 +2,7 @@
 :root { 
   --counter-red: #d9362b; 
   --counter-red-dark: #b92720; 
-  --counter-red-soft: #fff1ef; 
+  --counter-red-soft: #fef2f2; 
   --counter-red-light: #ffe3df; 
 }
 
@@ -131,24 +131,55 @@
 .empty-order p { margin: 0; font-size: 13px; }
 
 /* ===== Bottom Navigation ===== */
-.s-bottom-nav { position: fixed; left: 0; right: 0; bottom: 0; z-index: 20; display: grid; grid-template-columns: repeat(2,1fr); background: rgba(255,255,255,.98); border-top: 1px solid #dedede; box-shadow: 0 -4px 15px rgba(217,54,43,.08); }
-.s-bottom-nav a { position: relative; display: flex; align-items: center; justify-content: center; gap: 8px; min-height: 56px; color: #777; font-family: var(--font-head); font-size: 14px; text-decoration: none; transition: .18s ease; }
-.s-bottom-nav a.active { color: var(--counter-red); background: var(--counter-red-soft); font-weight: 600; }
-.s-bottom-nav a.active::before { content: ""; position: absolute; left: 25%; right: 25%; top: 0; height: 3px; border-radius: 0 0 5px 5px; background: var(--counter-red); }
+.s-bottom-nav { 
+  position: fixed; 
+  left: 0; 
+  right: 0; 
+  bottom: 0; 
+  z-index: 1000; 
+  display: grid; 
+  grid-template-columns: repeat(2, 1fr); 
+  background: #ffffff; 
+  border-top: 1px solid #e2e8f0; 
+  box-shadow: 0 -4px 12px rgba(0, 0, 0, 0.05); 
+}
+.s-bottom-nav a { 
+  position: relative; 
+  display: flex; 
+  align-items: center; 
+  justify-content: center; 
+  gap: 10px; 
+  min-height: 60px; 
+  color: #64748b; 
+  font-family: var(--font-head);
+  font-size: 16px; 
+  font-weight: 700; 
+  text-decoration: none; 
+  transition: all 0.2s ease; 
+  border-top: 3px solid transparent; 
+}
+.s-bottom-nav a:hover {
+  background: #f8fafc;
+}
+.s-bottom-nav a.active { 
+  color: var(--counter-red); 
+  background: var(--counter-red-soft); 
+  border-top-color: var(--counter-red); 
+}
 .s-bottom-nav .nav-badge {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  min-width: 20px;
-  height: 20px;
-  padding: 0 6px;
+  min-width: 24px;
+  height: 24px;
+  padding: 0 8px;
   border-radius: 999px;
-  background-color: var(--counter-red, #d9362b);
+  background-color: var(--counter-red);
   color: #ffffff !important;
-  font-size: 11px;
-  font-weight: 700;
+  font-family: var(--font-body);
+  font-size: 14px;
+  font-weight: 800;
   line-height: 1;
-  margin-left: 4px;
   box-shadow: 0 2px 4px rgba(217, 54, 43, 0.25);
 }
 

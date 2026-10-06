@@ -25,7 +25,7 @@ router.get('/counter', async (req, res) => {
     let list = cooked;
     if (tab === 'preparing') list = preparing;
     if (tab === 'cooked') list = cooked;
-    if (tab === 'ready') list = ready;
+    // นำเงื่อนไข if (tab === 'ready') ออกเนื่องจากหน้านี้ถูกย้ายไปยัง /counter/notify
 
     if (tab === 'done') {
       const allDone = await getOrdersByStatus([STATUS.READY, STATUS.DONE], q);
@@ -56,7 +56,8 @@ router.get('/counter', async (req, res) => {
         ready: ready.length,
         done: doneToday.n
       },
-      page: 'ready'
+      page: 'ready',
+      success: req.query.success // ส่งค่า success เพื่อแสดงข้อความแจ้งเตือนหน้าแรก
     });
   } catch (err) {
     res.status(500).send(err.message);
@@ -67,15 +68,18 @@ router.get('/counter', async (req, res) => {
 router.get('/counter/status', async (req, res) => {
   try {
     const list = await getOrdersByStatus([STATUS.COOKED]);
+    const readyList = await getOrdersByStatus([STATUS.READY]); // ดึงข้อมูล ready เพื่อนำไปคำนวณ Badge ด้านล่าง
+    
     let selected = null;
     const id = req.query.id || (list[0] ? list[0].Order_ID : null);
     if (id) selected = await getOrderFull(id);
     const employee = await getEmployee('หน้าเคาน์เตอร์');
+    
     res.render('counter/status', {
       list,
       selected,
       employee,
-      counts: { cooked: list.length, ready: 0 },
+      counts: { cooked: list.length, ready: readyList.length }, // แก้ไขจาก 0 ให้เป็นจำนวนจริง
       page: 'status',
       success: req.query.success
     });
@@ -90,7 +94,9 @@ router.post('/counter/status/:orderId', async (req, res) => {
       [STATUS.READY, req.params.orderId, STATUS.COOKED]);
     if (r.changes > 0) notifyCount[req.params.orderId] = 1;
     const o = await dbGet('SELECT Reference_Code FROM "Order" WHERE Order_ID = ?', [req.params.orderId]);
-    res.redirect('/counter/status?success=' + encodeURIComponent(orderNo(o ? o.Reference_Code : '')));
+    
+    // เปลี่ยนการ Redirect กลับไปหน้าแรก (/counter)
+    res.redirect('/counter?tab=cooked&success=' + encodeURIComponent(orderNo(o ? o.Reference_Code : '')));
   } catch (err) {
     res.status(500).send(err.message);
   }
@@ -100,16 +106,20 @@ router.post('/counter/status/:orderId', async (req, res) => {
 router.get('/counter/notify', async (req, res) => {
   try {
     const list = await getOrdersByStatus([STATUS.READY]);
+    const cookedList = await getOrdersByStatus([STATUS.COOKED]); // ดึงข้อมูล cooked เพื่อนำไปคำนวณ Badge ด้านล่าง
+    
     let selected = null;
     const id = req.query.id || (list[0] ? list[0].Order_ID : null);
     if (id) selected = await getOrderFull(id);
     if (selected) selected.notify = notifyCount[selected.Order_ID] || 0;
+    
     const employee = await getEmployee('หน้าเคาน์เตอร์');
+    
     res.render('counter/notify', {
       list,
       selected,
       employee,
-      counts: { cooked: 0, ready: list.length },
+      counts: { cooked: cookedList.length, ready: list.length }, // แก้ไขจาก 0 ให้เป็นจำนวนจริง
       page: 'notify',
       message: req.query.message
     });
