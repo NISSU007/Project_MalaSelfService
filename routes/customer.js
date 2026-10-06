@@ -444,24 +444,6 @@ router.get('/table/:tableId/order/:orderId', async (req, res) => {
   }
 });
 
-router.get('/table/:tableId/orders', async (req, res) => {
-  try {
-    const table = await getTable(req.params.tableId);
-    if (!table) return res.status(404).send('ไม่พบโต๊ะ');
-    const orders = await dbAll(
-      `SELECT o.*, strftime('%H:%M', o.Order_Date_Time, 'localtime') AS Order_Time
-       FROM "Order" o
-       WHERE o.Table_ID = ? AND o.Order_Status != ?
-       AND date(o.Order_Date_Time, 'localtime') = date('now', 'localtime')
-       ORDER BY o.Order_ID DESC`,
-      [table.Table_ID, STATUS.CART]
-    );
-    res.render('customer/orders', { table, orders });
-  } catch (err) {
-    res.status(500).send(err.message);
-  }
-});
-
 router.get('/api/order/:orderId', async (req, res) => {
   try {
     const order = await dbGet('SELECT Order_ID, Order_Status FROM "Order" WHERE Order_ID = ?', [req.params.orderId]);

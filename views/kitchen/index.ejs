@@ -9,22 +9,21 @@
 
     <% if (success) { %><div class="alert alert-green" role="status">✔ ออเดอร์ #<%= success %> ปรุงเสร็จสิ้น ส่งไปหน้าเคาน์เตอร์แล้ว</div><% } %>
 
-    <!-- ===== ตัวเลขสรุปจำนวนออเดอร์ ===== -->
-    <div class="stat-row">
-      <a href="?tab=preparing" class="stat amber <%= tab === 'preparing' ? 'active' : '' %>" style="text-decoration: none; color: inherit;">
-        📋 กำลังเตรียม <b><%= counts.preparing %></b> ออเดอร์
-      </a>
-      <a href="?tab=cooked" class="stat green <%= tab === 'cooked' ? 'active' : '' %>" style="text-decoration: none; color: inherit;">
-        🍲 ปรุงเสร็จแล้ว <b><%= counts.cooked %></b> ออเดอร์
-      </a>
-      <a href="?tab=done" class="stat <%= tab === 'done' ? 'active' : '' %>" style="text-decoration: none; color: inherit;">
-        ✅ เสร็จสิ้นวันนี้ <b><%= counts.done %></b> ออเดอร์
-      </a>
-    </div>
+    <!-- ===== แถบตัวกรองสถานะ + ช่องค้นหา (สไตล์เคาน์เตอร์) ===== -->
+    <div class="kitchen-toolbar">
+      <div class="kitchen-tabs">
+        <a href="?tab=preparing&q=<%= q %>" class="kitchen-tab preparing-tab <%= tab === 'preparing' ? 'active' : '' %>">
+          📋 กำลังเตรียม <b><%= counts.preparing %></b> <span>ออเดอร์</span>
+        </a>
+        <a href="?tab=cooked&q=<%= q %>" class="kitchen-tab cooked-tab <%= tab === 'cooked' ? 'active' : '' %>">
+          🍲 ปรุงเสร็จสิ้น <b><%= counts.cooked %></b> <span>ออเดอร์</span>
+        </a>
+        <a href="?tab=done&q=<%= q %>" class="kitchen-tab done-tab <%= tab === 'done' ? 'active' : '' %>">
+          ✅ เสร็จสิ้นวันนี้ <b><%= counts.done %></b> <span>ออเดอร์</span>
+        </a>
+      </div>
 
-    <!-- ===== ช่องค้นหา ===== -->
-    <div class="s-filter">
-      <form class="search" method="get">
+      <form class="kitchen-search" method="get">
         <input type="hidden" name="tab" value="<%= tab %>">
         <input type="search" name="q" value="<%= q %>" placeholder="🔍 ค้นหาเลขออเดอร์" aria-label="ค้นหาเลขออเดอร์">
       </form>
@@ -84,12 +83,12 @@
           <%- include('../partials/items-table', { order: selected }) %>
 
           <!-- ===== ปุ่มอัปเดตสถานะ / พิมพ์ใบเสร็จ ===== -->
-          <div style="display:flex;flex-direction:column;gap:8px;margin-top:14px">
-            <% if (selected.Order_Status === STATUS.PREPARING) { %>
-              <a class="btn btn-amber btn-block" href="/kitchen/status?id=<%= selected.Order_ID %>">อัปเดตสถานะ</a>
-            <% } %>
-            <a class="btn btn-red btn-block" href="/kitchen/print/<%= selected.Order_ID %>" target="_blank">🖨️ พิมพ์ใบเสร็จ</a>
-          </div>
+<div style="display:flex;flex-direction:column;gap:8px;margin-top:14px;width:100%;">
+  <% if (selected.Order_Status === STATUS.PREPARING) { %>
+    <a class="btn btn-amber" style="width:100%; text-align:center; box-sizing:border-box;" href="/kitchen/status?id=<%= selected.Order_ID %>">อัปเดตสถานะ</a>
+  <% } %>
+  <a class="btn btn-red" style="width:100%; text-align:center; box-sizing:border-box;" href="/kitchen/print/<%= selected.Order_ID %>" target="_blank">🖨️ พิมพ์ใบเสร็จ</a>
+</div>
         </aside>
       <% } %>
 

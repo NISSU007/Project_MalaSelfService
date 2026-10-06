@@ -1,22 +1,57 @@
-/* ===== แถบตัวกรองและช่องค้นหา ===== */
-.s-filter { display: flex; justify-content: flex-end; align-items: center; gap: 12px; flex-wrap: wrap; margin-bottom: 14px; }
-.s-tabs { display: flex; gap: 6px; flex-wrap: wrap; }
-.s-tabs a { padding: 7px 16px; border-radius: var(--radius-sm); background: #ebe5e3; font-family: var(--font-head); font-size: 15px; }
-.s-tabs a.active { background: var(--ink); color: #fff; }
-.search { display: flex; gap: 6px; }
-.panel .search input { width: 100%; min-width: 0; }
-.search input { padding: 8px 12px; border: 1.5px solid var(--line); border-radius: var(--radius-sm); min-width: 220px; }
+/* ===== แถบตัวกรองสถานะ (สไตล์เคาน์เตอร์) ===== */
+.kitchen-toolbar { display: flex; align-items: stretch; gap: 12px; width: 100%; margin-bottom: 20px; }
+.kitchen-tabs { display: flex; gap: 10px; flex: 1; }
+.kitchen-tab {
+  flex: 1;
+  min-height: 52px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  border: 1.5px solid #e0e0e0;
+  border-radius: 12px;
+  background: #fff;
+  color: #333;
+  padding: 10px 16px;
+  font-family: var(--font-head);
+  font-size: 15px;
+  font-weight: 600;
+  text-decoration: none;
+  box-shadow: 0 2px 8px rgba(0,0,0,.03);
+  transition: all .18s ease;
+}
+.kitchen-tab b {
+  font-size: 22px;
+  font-weight: 700;
+  margin: 0 2px;
+}
+.kitchen-tab span {
+  font-size: 12px;
+  font-weight: 400;
+  opacity: .8;
+}
 
-/* ===== สถิติรวมของครัว ===== */
-.stat-row { display: flex; gap: 12px; margin-bottom: 16px; flex-wrap: wrap; }
-.stat { display: flex; align-items: center; gap: 10px; padding: 10px 18px; border-radius: var(--radius); border: 1.5px solid var(--ink); font-family: var(--font-head); font-size: 16px; background: #fff; }
-.stat b { font-size: 24px; }
-.stat.amber { background: var(--amber-soft); }
-.stat.green { background: var(--jade-soft); }
+/* สีแต่ละสถานะ */
+.kitchen-tab.preparing-tab { background: #fffdf5; border-color: #f3d481; color: #8b5b00; }
+.kitchen-tab.preparing-tab.active { background: #fff3ce; border: 2px solid #d99b00; color: #6d4600; box-shadow: 0 4px 12px rgba(217, 155, 0, 0.18); }
+
+.kitchen-tab.cooked-tab { background: #f4faf6; border-color: #b3e3c1; color: #1e6b3b; }
+.kitchen-tab.cooked-tab.active { background: #267a47; border: 2px solid #1e6b3b; color: #ffffff; box-shadow: 0 4px 14px rgba(38, 122, 71, 0.25); }
+.kitchen-tab.cooked-tab.active span { color: rgba(255, 255, 255, 0.9); }
+
+.kitchen-tab.done-tab { background: #fafafa; border-color: #e0e0e0; color: #555; }
+.kitchen-tab.done-tab.active { background: #e8e8e8; border: 2px solid #777; color: #222; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08); }
+
+.kitchen-tab:hover { transform: translateY(-2px); }
+
+/* ===== ช่องค้นหา ===== */
+.kitchen-search { width: 245px; display: flex; align-items: center; gap: 8px; border: 1.5px solid #d7d7d7; border-radius: 12px; background: #fff; padding: 0 14px; box-shadow: 0 2px 6px rgba(0,0,0,.04); }
+.kitchen-search input { width: 100%; border: 0; outline: 0; background: transparent; color: var(--ink); font-family: var(--font-head); font-size: 14px; }
+.kitchen-search:focus-within { border-color: var(--chili); box-shadow: 0 0 0 3px rgba(217,54,43,.09); }
 
 /* ===== การ์ดออเดอร์ ===== */
 .order-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 14px; }
-.o-card { background: var(--paper); border: 1.5px solid var(--ink); border-radius: var(--radius); padding: 14px; display: flex; flex-direction: column; gap: 6px; }
+.o-card { background: var(--paper); border: 1.5px solid var(--ink); border-radius: var(--radius); padding: 14px; display: flex; flex-direction: column; gap: 6px; text-decoration: none; color: inherit;}
 .o-card.selected { border: 3px solid var(--chili); }
 .o-card-head { display: flex; justify-content: space-between; align-items: baseline; }
 .o-no { font-family: var(--font-head); font-size: 24px; font-weight: 700; letter-spacing: .5px; }
@@ -25,8 +60,6 @@
   justify-content: space-between; 
   color: var(--muted); 
   font-size: 14px; 
-
-  /* ---สร้างเส้นคั่น --- */
   border-bottom: 1px solid black; 
   padding-bottom: 8px;                  
   margin-bottom: 4px;
@@ -47,16 +80,14 @@
 
 .detail-head {
   display: flex;
-  justify-content: space-between; /* ดันเนื้อหาซ้าย-ขวาออกจากกัน */
-  align-items: flex-start;        /* จัดให้อยู่ชิดขอบบนสุด */
+  justify-content: space-between;
+  align-items: flex-start;
   gap: 12px;
   margin-bottom: 12px;
 }
-
-/* Badge สถานะที่อยู่ฝั่งขวา */
 .detail-head .badge {
-  margin-left: auto; /* ช่วยดันไปชิดขวาสุด */
-  white-space: nowrap; /* ป้องกันไม่ให้ข้อความตกบรรทัด */
+  margin-left: auto;
+  white-space: nowrap;
 }
 
 /* ===== ใบเสร็จสำหรับครัว ===== */
@@ -68,31 +99,23 @@
 .slip .r { text-align: right; }
 .slip-actions { text-align: center; }
 
-/* ===== Responsive สำหรับครัว ===== */
-@media (max-width: 820px) {
-  .search input { min-width: 0; width: 100%; }
-}
-
-/* คอนเทนเนอร์หลักแนวตั้ง */
+/* ===== คอนเทนเนอร์หลักแนวตั้ง (Vstep) ===== */
 .vstep {
   list-style: none;
   padding: 0;
   margin: 16px 0;
-  border-left: 3px solid #e0e0e0; /* เส้นแนวตั้งฝั่งซ้าย */
-  margin-left: 15px; /* เว้นระยะให้ตัวเลข/วงกลมไม่ชิดขอบเกินไป */
+  border-left: 3px solid #e0e0e0;
+  margin-left: 15px;
 }
-
 .vstep li {
-  padding: 8px 0 16px 20px; /* เว้นระยะห่างด้านซ้ายห่างจากเส้น */
+  padding: 8px 0 16px 20px;
   position: relative;
   font-size: 16px;
   color: #888;
 }
-
-/* จุดวงกลมบนเส้นแนวตั้ง */
 .vstep .dot {
   position: absolute;
-  left: -18px; /* ดึงวงกลมให้ทับเส้นแนวตั้งตรงกลาง */
+  left: -18px;
   width: 32px;
   height: 32px;
   border-radius: 50%;
@@ -102,23 +125,20 @@
   justify-content: center;
   font-size: 16px;
 }
+.vstep li.done { color: #1b8a5a; font-weight: bold; }
+.vstep li.done .dot { background-color: #1b8a5a; }
+.vstep li.now { color: #d35400; font-weight: bold; }
+.vstep li.now .dot { background-color: #f39c12; }
 
-/* --- สถานะต่างๆ --- */
-
-/* 1. สถานะทำเสร็จแล้ว */
-.vstep li.done {
-  color: #1b8a5a;
-  font-weight: bold;
+/* ===== Responsive สำหรับครัว ===== */
+@media (max-width: 900px) {
+  .kitchen-toolbar { flex-direction: column; }
+  .kitchen-search { width: auto; min-height: 45px; }
 }
-.vstep li.done .dot {
-  background-color: #1b8a5a; /* จุดสีเขียว */
+@media (max-width: 820px) {
+  .search input { min-width: 0; width: 100%; }
 }
-
-/* 2. สถานะปัจจุบัน */
-.vstep li.now {
-  color: #d35400;
-  font-weight: bold;
-}
-.vstep li.now .dot {
-  background-color: #f39c12; /* จุดสีส้ม */
+@media (max-width: 650px) {
+  .kitchen-tabs { flex-direction: column; }
+  .kitchen-tab { flex: none; min-height: 46px; }
 }

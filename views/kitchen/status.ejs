@@ -14,49 +14,96 @@
       
       <!-- ===== รายละเอียด + ขั้นตอนสถานะ ===== -->
       <% if (selected) { %>
-        <section class="panel">
-          <div class="detail-head">
-            <div><span class="o-no"><%= orderNo(selected.Reference_Code) %></span> <span class="muted">โต๊ะ <%= selected.Table_Number %></span></div>
-            <span class="badge <%= selected.Order_Status === STATUS.PREPARING ? 'badge-amber' : 'badge-green' %>"><%= selected.Order_Status %></span>
+        <section class="panel" style="padding: 24px; border-radius: 16px; background: #fff; box-shadow: 0 2px 10px rgba(0,0,0,0.05);">
+          
+          <!-- ส่วนหัว: หมายเลขออเดอร์ และ โต๊ะ -->
+          <div class="detail-head" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px;">
+            <div style="display: flex; align-items: center; gap: 12px;">
+              <span class="o-no" style="font-size: 36px; font-weight: 900; letter-spacing: 1px;"><%= orderNo(selected.Reference_Code) %></span>
+              <span style="background: #f0f0f0; color: #555; padding: 4px 14px; border-radius: 20px; font-size: 14px; font-weight: 600;">โต๊ะ <%= selected.Table_Number %></span>
+            </div>
+            <span class="badge" style="font-size: 14px; padding: 6px 16px; border-radius: 20px; background-color: #8cd66d; color: #1a4f14; border: 1.5px solid #4a9e2a; font-weight: 600;">
+              <%= selected.Order_Status %>
+            </span>
           </div>
-          <div class="food-visual">
-            <div class="plate">🍲</div>
-            <ul class="o-items" style="flex:1">
-              <% selected.items.forEach(function (it) { %>
-                <li><span>• <%= it.Menu_Name %> <% if (it.Spiciness_Level) { %><span class="spice">🌶 <%= it.Spiciness_Level %></span><% } %></span><span>x<%= it.Quantity %></span></li>
-              <% }) %>
-            </ul>
+          
+          <!-- ส่วนรายการอาหาร: กล่องภาพซ้าย รายการขวา -->
+          <div class="food-visual" style="display: flex; gap: 20px; align-items: flex-start; margin-bottom: 24px;">
+            <div class="plate" style="width: 120px; height: 120px; border: 2px solid #222; border-radius: 14px; display: flex; align-items: center; justify-content: center; font-size: 50px; background: #fafafa; flex-shrink: 0; overflow: hidden;">
+              <% if (selected.items && selected.items[0] && selected.items[0].Image_URL) { %>
+                <img src="<%= selected.items[0].Image_URL %>" alt="Food Image" style="width:100%; height:100%; object-fit:cover;">
+              <% } else { %>
+                🍲
+              <% } %>
+            </div>
+            <div style="flex: 1; display: flex; flex-direction: column; gap: 8px;">
+              <ul class="o-items" style="list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 8px;">
+                <% selected.items.forEach(function (it) { %>
+                  <li style="display: flex; justify-content: space-between; align-items: center; font-size: 15px;">
+                    <div>
+                      <span>• <%= it.Menu_Name %></span>
+                      <% if (it.Spiciness_Level) { %>
+                        <span class="spice" style="color: #d9362b; margin-left: 6px; font-size: 13px; font-weight: 600;">🌶️ <%= it.Spiciness_Level %></span>
+                      <% } %>
+                      <% if (it.Special_Note) { %>
+                        <div style="font-size: 12px; color: #666; margin-left: 12px;">📝 <%= it.Special_Note %></div>
+                      <% } %>
+                    </div>
+                    <span style="font-weight: 700; color: #222; margin-left: 10px;">x<%= it.Quantity %></span>
+                  </li>
+                <% }) %>
+              </ul>
+            </div>
           </div>
 
           <!-- ===== เส้นคั่นสีดำจางๆ ===== -->
-        <hr style="border: 0; border-top: 1px solid #000; margin: 16px 0;">
+          <hr style="border: 0; border-top: 1px solid #e0e0e0; margin: 20px 0;">
 
-          <h3>สถานะปัจจุบัน</h3>
+          <!-- ส่วนสถานะปัจจุบัน -->
+          <h3 style="font-size: 18px; font-weight: 700; margin-bottom: 20px; color: #222;">สถานะปัจจุบัน</h3>
           <% var cooked = selected.Order_Status !== STATUS.PREPARING; %>
-          <ul class="vstep">
-            <!-- 1. ชำระเงิน (เสร็จแล้วเสมอ) -->
-            <li class="done">
-              <span class="dot">💳</span>
-              <span class="step-label">ชำระเงิน</span>
+          
+          <ul class="vstep" style="position: relative; list-style: none; padding: 0; margin: 0 0 28px 14px; border-left: 2px solid #e0e0e0;">
+            
+            <!-- 1. กำลังเตรียมอาหาร -->
+            <li style="padding: 0 0 24px 28px; position: relative;">
+              <span class="dot" style="position: absolute; left: -15px; top: -2px; width: 28px; height: 28px; border-radius: 50%; background-color: #1e6b3b; color: white; display: flex; align-items: center; justify-content: center; font-size: 14px; font-weight: bold;">✓</span>
+              <span class="step-label" style="color: #222; font-size: 16px; font-weight: 600;">กำลังเตรียมอาหาร</span>
             </li>
 
-            <!-- 2. กำลังเตรียมอาหาร -->
-            <li class="<%= cooked ? 'done' : 'now' %>">
-              <span class="dot">🍳</span>
-              <span class="step-label">กำลังเตรียมอาหาร</span>
+            <!-- 2. ปรุงเสร็จสิ้น -->
+            <li style="padding: 0 0 24px 28px; position: relative;">
+              <% if (!cooked) { %>
+                <!-- อยู่ในขั้นตอนนี้ (สีส้ม + ไฮไลท์เหลือง) -->
+                <span class="dot" style="position: absolute; left: -15px; top: 2px; width: 28px; height: 28px; border-radius: 50%; background-color: #f39c12; color: white; display: flex; align-items: center; justify-content: center; font-size: 14px; box-shadow: 0 2px 6px rgba(243, 156, 18, 0.4);">🍲</span>
+                <span style="display: inline-block; background: #fff3ce; padding: 6px 18px; border-radius: 20px; color: #333; font-weight: 700; font-size: 15px;">ปรุงเสร็จสิ้น</span>
+              <% } else { %>
+                <!-- ปรุงเสร็จแล้ว (ติ๊กถูกสีเขียว) -->
+                <span class="dot" style="position: absolute; left: -15px; top: 2px; width: 28px; height: 28px; border-radius: 50%; background-color: #1e6b3b; color: white; display: flex; align-items: center; justify-content: center; font-size: 14px; font-weight: bold;">✓</span>
+                <span class="step-label" style="color: #222; font-size: 16px; font-weight: 600;">ปรุงเสร็จสิ้น</span>
+              <% } %>
             </li>
 
-            <!-- 3. พร้อมรับอาหาร -->
-            <li class="<%= cooked ? 'now' : '' %>">
-              <span class="dot"><%= cooked ? '🍲' : '•' %></span>
-              <span class="step-label">พร้อมรับอาหาร</span>
+            <!-- 3. พร้อมเสิร์ฟ -->
+            <li style="padding: 0 0 0 28px; position: relative;">
+              <% if (!cooked) { %>
+                <!-- ยังปรุงไม่เสร็จ (สีเทา) -->
+                <span class="dot" style="position: absolute; left: -15px; top: 2px; width: 28px; height: 28px; border-radius: 50%; background-color: #ccc; color: white; display: flex; align-items: center; justify-content: center;"></span>
+                <span class="step-label" style="color: #888; font-size: 16px;">พร้อมเสิร์ฟ</span>
+              <% } else { %>
+                <!-- ปรุงเสร็จแล้ว/กำลังรอเสิร์ฟ (สีส้ม + ไฮไลท์เหลือง) -->
+                <span class="dot" style="position: absolute; left: -15px; top: 2px; width: 28px; height: 28px; border-radius: 50%; background-color: #f39c12; color: white; display: flex; align-items: center; justify-content: center; font-size: 14px; box-shadow: 0 2px 6px rgba(243, 156, 18, 0.4);">🍲</span>
+                <span style="display: inline-block; background: #fff3ce; padding: 6px 18px; border-radius: 20px; color: #333; font-weight: 700; font-size: 15px;">พร้อมเสิร์ฟ</span>
+              <% } %>
             </li>
           </ul>
 
           <!-- ===== ปุ่มเปลี่ยนเป็นปรุงเสร็จสิ้น ===== -->
           <% if (!cooked) { %>
             <form method="post" action="/kitchen/status/<%= selected.Order_ID %>">
-              <button class="btn btn-red btn-block" type="submit">✓ เปลี่ยนเป็น "ปรุงเสร็จสิ้น"</button>
+              <button class="btn btn-red btn-block" type="submit" style="width: 100%; border-radius: 30px; font-size: 16px; font-weight: 700; padding: 14px; margin-top: 10px; background-color: #d9362b; border: none; cursor: pointer; color: #fff; box-shadow: 0 4px 12px rgba(217, 54, 43, 0.25); transition: all 0.2s ease;">
+                ✓ เปลี่ยนเป็น ปรุงอาหารเสร็จสิ้น
+              </button>
             </form>
           <% } %>
         </section>

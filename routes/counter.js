@@ -3,20 +3,61 @@ const router = express.Router();
 const { dbGet, dbRun } = require('../config/db');
 const { STATUS, notifyCount, orderNo, getOrderFull, getOrdersByStatus, getEmployee } = require('../utils/helpers');
 
-async function counterCounts() {
-  const a = await dbGet('SELECT COUNT(*) AS n FROM "Order" WHERE Order_Status = ?', [STATUS.COOKED]);
-  const b = await dbGet('SELECT COUNT(*) AS n FROM "Order" WHERE Order_Status = ?', [STATUS.READY]);
-  return { cooked: a.n, ready: b.n };
-}
-
-// UC10: แสดงออเดอร์ที่พร้อมเสิร์ฟ
+// UC10: แสดงออเดอร์ที่เคาน์เตอร์ (เพิ่มระบบ Tab Filter & Search)
 router.get('/counter', async (req, res) => {
   try {
-    const list = await getOrdersByStatus([STATUS.COOKED]);
+    const tab = req.query.tab || 'cooked'; // ค่าเริ่มต้นแสดงออเดอร์ที่ปรุงเสร็จแล้ว
+    const q = (req.query.q || '').trim();
+
+    // ดึงข้อมูลแต่ละสถานะพร้อมการค้นหา
+    const preparing = await getOrdersByStatus([STATUS.PREPARING], q);
+    const cooked = await getOrdersByStatus([STATUS.COOKED], q);
+    const ready = await getOrdersByStatus([STATUS.READY], q);
+
+    // ดึงจำนวนออเดอร์ที่เสร็จสิ้นของวันนี้
+    const doneToday = await dbGet(
+      `SELECT COUNT(*) AS n FROM "Order" WHERE Order_Status IN (?, ?)
+       AND date(Order_Date_Time, 'localtime') = date('now', 'localtime')`,
+      [STATUS.READY, STATUS.DONE]
+    );
+
+    // เลือกลิสต์ข้อมูลตามแท็บที่เลือก
+    let list = cooked;
+    if (tab === 'preparing') list = preparing;
+    if (tab === 'cooked') list = cooked;
+    if (tab === 'ready') list = ready;
+
+    if (tab === 'done') {
+      const allDone = await getOrdersByStatus([STATUS.READY, STATUS.DONE], q);
+      const todayOrders = await dbGet(
+        `SELECT GROUP_CONCAT(Order_ID) AS ids FROM "Order" 
+         WHERE Order_Status IN (?, ?) 
+         AND date(Order_Date_Time, 'localtime') = date('now', 'localtime')`,
+        [STATUS.READY, STATUS.DONE]
+      );
+      const todayIds = todayOrders && todayOrders.ids ? todayOrders.ids.split(',').map(String) : [];
+      list = allDone.filter(o => todayIds.includes(String(o.Order_ID)));
+    }
+
     let selected = null;
     if (req.query.id) selected = await getOrderFull(req.query.id);
+
     const employee = await getEmployee('หน้าเคาน์เตอร์');
-    res.render('counter/index', { list, selected, employee, counts: await counterCounts(), page: 'ready' });
+
+    res.render('counter/index', {
+      tab,
+      q,
+      list,
+      selected,
+      employee,
+      counts: {
+        preparing: preparing.length,
+        cooked: cooked.length,
+        ready: ready.length,
+        done: doneToday.n
+      },
+      page: 'ready'
+    });
   } catch (err) {
     res.status(500).send(err.message);
   }
@@ -30,7 +71,14 @@ router.get('/counter/status', async (req, res) => {
     const id = req.query.id || (list[0] ? list[0].Order_ID : null);
     if (id) selected = await getOrderFull(id);
     const employee = await getEmployee('หน้าเคาน์เตอร์');
-    res.render('counter/status', { list, selected, employee, counts: await counterCounts(), page: 'status', success: req.query.success });
+    res.render('counter/status', {
+      list,
+      selected,
+      employee,
+      counts: { cooked: list.length, ready: 0 },
+      page: 'status',
+      success: req.query.success
+    });
   } catch (err) {
     res.status(500).send(err.message);
   }
@@ -58,7 +106,11 @@ router.get('/counter/notify', async (req, res) => {
     if (selected) selected.notify = notifyCount[selected.Order_ID] || 0;
     const employee = await getEmployee('หน้าเคาน์เตอร์');
     res.render('counter/notify', {
-      list, selected, employee, counts: await counterCounts(), page: 'notify',
+      list,
+      selected,
+      employee,
+      counts: { cooked: 0, ready: list.length },
+      page: 'notify',
       message: req.query.message
     });
   } catch (err) {

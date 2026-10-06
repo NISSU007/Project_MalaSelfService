@@ -2,25 +2,20 @@
 
   <a href="/counter" class="<%= page === 'ready' ? 'active' : '' %>">
     🛎️ ออเดอร์ที่ต้องเสิร์ฟ
-
-    <% if (counts.cooked> 0) { %>
-      <span class="nav-count">
+    <% if (counts.cooked > 0) { %>
+      <span class="nav-badge">
         <%= counts.cooked %>
       </span>
-      <% } %>
-
+    <% } %>
   </a>
-
 
   <a href="/counter/notify" class="<%= page === 'notify' ? 'active' : '' %>">
     🔔 แจ้งเตือน
-
-    <% if (counts.ready> 0) { %>
-      <span class="nav-count">
+    <% if (counts.ready > 0) { %>
+      <span class="nav-badge">
         <%= counts.ready %>
       </span>
-      <% } %>
-
+    <% } %>
   </a>
 
 </nav>

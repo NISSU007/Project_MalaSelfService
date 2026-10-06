@@ -5,51 +5,134 @@
 
   <main class="s-main">
     <!-- ===== หัวข้อหน้าออเดอร์ที่พร้อมเสิร์ฟ ===== -->
-    <h1 class="s-title">🛎️ แสดงออเดอร์ที่พร้อมเสิร์ฟ</h1>
-    <p class="muted" style="margin-top:-8px">ออเดอร์ที่ครัวปรุงเสร็จแล้ว รอส่งมอบให้ลูกค้า</p>
+    <h1 class="s-title">แสดงออเดอร์ที่พร้อมเสิร์ฟ</h1>
+
+    <!-- ===== แถบตัวกรองสถานะ + ช่องค้นหา ===== -->
+    <div class="counter-toolbar">
+      <div class="counter-tabs">
+        <a href="?tab=preparing&q=<%= q %>" class="counter-tab preparing-tab <%= tab === 'preparing' ? 'active' : '' %>">
+          📋 กำลังเตรียม <b><%= (counts && counts.preparing) || 0 %></b> <span>ออเดอร์</span>
+        </a>
+        <a href="?tab=cooked&q=<%= q %>" class="counter-tab cooked-tab <%= tab === 'cooked' ? 'active' : '' %>">
+          🍲 ปรุงเสร็จสิ้น <b><%= (counts && counts.cooked) || 0 %></b> <span>ออเดอร์</span>
+        </a>
+        <a href="?tab=done&q=<%= q %>" class="counter-tab done-tab <%= tab === 'done' ? 'active' : '' %>">
+          ✅ เสร็จสิ้นวันนี้ <b><%= (counts && counts.done) || 0 %></b> <span>ออเดอร์</span>
+        </a>
+      </div>
+
+      <form class="counter-search" method="get">
+        <input type="hidden" name="tab" value="<%= tab %>">
+        <input type="search" name="q" value="<%= q %>" placeholder="🔍 ค้นหาเลขออเดอร์" aria-label="ค้นหาเลขออเดอร์">
+      </form>
+    </div>
 
     <div class="s-layout <%= selected ? 'has-side' : '' %>">
 
-      <!-- ===== การ์ดออเดอร์ที่ปรุงเสร็จ ===== -->
+      <!-- ===== การ์ดออเดอร์ ===== -->
       <section class="order-grid">
-        <% if (list.length === 0) { %><p class="muted">ยังไม่มีออเดอร์ที่ปรุงเสร็จ</p><% } %>
-        <% list.forEach(function (o) { %>
-          <div class="o-card <%= selected && selected.Order_ID === o.Order_ID ? 'selected' : '' %>">
-            <div class="o-card-head">
-              <span class="o-no"><%= orderNo(o.Reference_Code) %></span>
-              <span class="muted"><%= o.Order_Time %> น.</span>
-            </div>
-            <div class="o-meta"><span>โต๊ะ <%= o.Table_Number %></span><span><%= o.Item_Count %> รายการ</span></div>
-            <ul class="o-items">
-              <% o.items.forEach(function (it) { %>
-                <!-- ===== แสดงชื่อเมนู ระดับความเผ็ด และจำนวน ===== -->
-                <li>
-                  <span>• <%= it.Menu_Name %> <% if (it.Spiciness_Level) { %><span class="spice">🌶 <%= it.Spiciness_Level %></span><% } %></span>
-                  <span>x<%= it.Quantity %></span>
-                </li>
-              <% }) %>
-            </ul>
-            <!-- ===== ปุ่มอัปเดตสถานะ / ดูรายละเอียด ===== -->
-            <div class="o-actions">
-              <a class="btn btn-green btn-sm" href="/counter/status?id=<%= o.Order_ID %>">อัปเดตสถานะ</a>
-              <a class="btn btn-light btn-sm" href="?id=<%= o.Order_ID %>">รายละเอียด</a>
-            </div>
+        <% if (!list || list.length === 0) { %>
+          <div class="empty-order">
+            <div class="empty-icon">🍽️</div>
+            <p>ไม่พบออเดอร์ในหมวดหมู่นี้</p>
           </div>
-        <% }) %>
+        <% } else { %>
+          <% list.forEach(function (o) { %>
+            <div class="o-card <%= selected && selected.Order_ID === o.Order_ID ? 'selected' : '' %>">
+              
+              <!-- ===== หัวการ์ด ===== -->
+              <div class="o-card-head">
+                <div>
+                  <span class="o-no"><%= orderNo(o.Reference_Code) %></span>
+                  <span class="o-table">โต๊ะ <%= o.Table_Number %></span>
+                </div>
+                <span class="o-time"><%= o.Order_Time %> น.</span>
+              </div>
+
+              <!-- ===== รายละเอียดออเดอร์ (รูปซ้าย - รายการขวา) ===== -->
+              <div class="o-content">
+                <!-- ฝั่งซ้าย: รูปภาพหรือไอคอน -->
+                <div class="o-content-left">
+                  <% if (o.items && o.items[0] && o.items[0].Image_URL) { %>
+                    <img src="<%= o.items[0].Image_URL %>" alt="Order Image">
+                  <% } else { %>
+                    🍜
+                  <% } %>
+                </div>
+
+                <!-- ฝั่งขวา: รายการอาหาร -->
+                <div class="o-content-right">
+                  <% if (o.items && o.items.length > 0) { %>
+                    <% o.items.forEach(function (it) { %>
+                      <div class="o-list-item">
+                        <div class="o-list-item-info">
+                          <div class="o-list-item-header">
+                            <span class="o-list-item-name">• <%= it.Menu_Name %></span>
+                            <% if (it.Spiciness_Level) { %>
+                              <span class="spice-badge">🌶️ <%= it.Spiciness_Level %></span>
+                            <% } %>
+                          </div>
+                          <% if (it.Special_Note) { %>
+                            <div class="note-badge">📝 <%= it.Special_Note %></div>
+                          <% } %>
+                        </div>
+                        <div class="o-list-item-qty">x<%= it.Quantity %></div>
+                      </div>
+                    <% }) %>
+                  <% } else { %>
+                    <div style="color: #999; font-size: 12px;">ไม่มีรายการอาหาร</div>
+                  <% } %>
+                </div>
+              </div>
+
+              <!-- ===== ปุ่มอัปเดตสถานะ / ดูรายละเอียด ===== -->
+              <div class="o-actions">
+                <span class="order-status status-<%= o.Status || 'cooked' %>">
+                  <% if (o.Status === 'preparing' || tab === 'preparing') { %>
+                    กำลังเตรียม
+                  <% } else if (o.Status === 'cooked' || tab === 'cooked') { %>
+                    ปรุงเสร็จสิ้น
+                  <% } else if (o.Status === 'ready') { %>
+                    พร้อมเสิร์ฟ
+                  <% } else if (o.Status === 'done' || tab === 'done') { %>
+                    เสร็จสิ้น
+                  <% } else { %>
+                    อัปเดตสถานะ
+                  <% } %>
+                </span>
+                <a class="detail-btn" href="?tab=<%= tab %>&q=<%= q %>&id=<%= o.Order_ID %>">ดูรายละเอียด</a>
+              </div>
+            </div>
+          <% }) %>
+        <% } %>
       </section>
 
-      <!-- ===== แผงรายละเอียดออเดอร์ (ด้านขวาเมื่อกดดูรายละเอียด) ===== -->
+      <!-- ===== แผงรายละเอียดออเดอร์ (ด้านขวา) ===== -->
       <% if (selected) { %>
-        <aside class="panel">
+        <aside class="panel counter-detail-panel">
           <div class="detail-head">
-            <div>
-              <div class="muted">รายละเอียดออเดอร์ · โต๊ะ <%= selected.Table_Number %></div>
-              <span class="o-no"><%= orderNo(selected.Reference_Code) %></span>
+            <div class="detail-head-row1">
+              <div class="detail-title-text">รายละเอียดออเดอร์ · โต๊ะ <%= selected.Table_Number %></div>
+              <a class="close-x" href="?tab=<%= tab %>&q=<%= q %>" aria-label="ปิด">✕</a>
             </div>
-            <a class="close-x" href="/counter" aria-label="ปิด">✕</a>
+            <div class="detail-head-row2">
+              <span class="detail-order-no"><%= orderNo(selected.Reference_Code) %></span>
+              <div class="detail-time-text">
+                <div>🕒 <%= selected.Order_Time %> น.</div>
+                <div><%= selected.Order_Date || '' %></div>
+              </div>
+            </div>
           </div>
-          <!-- ===== ดึงตารางรายการอาหารมาแสดงจาก partials ===== -->
+
           <%- include('../partials/items-table', { order: selected }) %>
+
+          <% if (tab === 'cooked') { %>
+            <div class="detail-actions">
+              <a class="detail-update-btn" href="/counter/status?id=<%= selected.Order_ID %>">
+                อัปเดตสถานะ
+              </a>
+            </div>
+          <% } %>
         </aside>
       <% } %>
     </div>

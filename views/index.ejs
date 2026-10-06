@@ -28,17 +28,6 @@
     </a>
   </section>
 
-  <!-- ===== ลิงก์เข้าหน้าลูกค้าแต่ละโต๊ะ (ทดสอบบนคอม) ===== -->
-  <section>
-    <h3 style="margin-bottom:10px">ทดสอบหน้าลูกค้า (แทนการสแกน)</h3>
-    <div class="table-links">
-      <% tables.forEach(function (t) { %>
-        <a href="<%= t.QR_Code_URL %>">โต๊ะ <%= t.Table_Number %></a>
-      <% }) %>
-    </div>
-    <p class="muted" style="margin-top:14px">ที่อยู่สำหรับมือถือในวง Wi-Fi เดียวกัน: <b><%= baseURL %></b></p>
-  </section>
-
 </main>
 </body>
 </html>
