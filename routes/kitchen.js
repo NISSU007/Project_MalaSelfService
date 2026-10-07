@@ -20,11 +20,10 @@ router.get('/kitchen', async (req, res) => {
     let list = preparing;
     if (tab === 'cooked') list = cooked;
     
-    // ===== แก้ไขส่วนนี้เพื่อกรองเฉพาะออเดอร์ของ "วันนี้" =====
+    // กรองเฉพาะออเดอร์ของ "วันนี้"
     if (tab === 'done') {
       const allDone = await getOrdersByStatus([STATUS.READY, STATUS.DONE], q);
       
-      // ดึงเฉพาะ Order_ID ของออเดอร์ที่สถานะเสร็จสิ้นและเป็นของวันนี้
       const todayOrders = await dbGet(
         `SELECT GROUP_CONCAT(Order_ID) AS ids FROM "Order" 
          WHERE Order_Status IN (?, ?) 
@@ -32,10 +31,7 @@ router.get('/kitchen', async (req, res) => {
         [STATUS.READY, STATUS.DONE]
       );
       
-      // แปลงเป็น Array เพื่อใช้เช็คเงื่อนไข
       const todayIds = todayOrders && todayOrders.ids ? todayOrders.ids.split(',').map(String) : [];
-      
-      // กรอง (Filter) ให้เหลือเฉพาะออเดอร์ที่มี ID ตรงกับของวันนี้
       list = allDone.filter(o => todayIds.includes(String(o.Order_ID)));
     }
 

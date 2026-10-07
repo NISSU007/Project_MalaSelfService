@@ -1,4 +1,4 @@
-<%- include('../partials/head', {css: 'kitchen', title: 'ออเดอร์ที่ต้องปรุง', refresh: selected ? 0 : 10 }) %>
+<%- include('../partials/head', {css: 'kitchen', title: 'ออเดอร์ที่ต้องปรุง', refresh: 0 }) %>
 <body>
 <div class="staff">
   <%- include('../partials/staff-top', { roleLabel: 'ครัว' }) %>
@@ -30,7 +30,7 @@
     </div>
 
     <% if (list.length === 0) { %>
-      <!-- ===== กรณีไม่มีออเดอร์ (แสดงผลเต็มหน้าจอตามรูปที่ 2) ===== -->
+      <!-- ===== กรณีไม่มีออเดอร์ (แสดงผลเต็มหน้าจอ) ===== -->
       <div class="empty-order" style="display: flex; flex-direction: column; align-items: center; justify-content: center; width: 100%; min-height: 350px; background: #ffffff; border: 2px dashed #d0d0d0; border-radius: 20px; margin-top: 20px; text-align: center; padding: 40px 20px; box-sizing: border-box;">
         <div class="empty-icon" style="font-size: 50px; margin-bottom: 12px; opacity: 0.6;">🍽️</div>
         <p style="font-size: 16px; font-weight: 500; color: #888; margin: 0;">ไม่มีออเดอร์ในขณะนี้</p>
@@ -67,20 +67,15 @@
         <% if (selected) { %>
           <aside class="panel">
             <div class="detail-head" style="display:flex; flex-direction:column; gap:4px">
-              <!-- แถวที่ 1: ข้อความรายละเอียดออเดอร์ (ซ้าย) + ปุ่มปิด ✕ (ขวา) -->
               <div style="display:flex; justify-content:space-between; align-items:center; width:100%">
                 <div class="muted">รายละเอียดออเดอร์ · โต๊ะ <%= selected.Table_Number %></div>
                 <a class="close-x" href="?tab=<%= tab %>" aria-label="ปิด">✕</a>
               </div>
 
-              <!-- แถวที่ 2: หมายเลขออเดอร์ + เวลา/วันที่ ด้านขวา -->
               <div style="display: flex; justify-content: space-between; align-items: flex-start; width: 100%;">
-                <!-- ฝั่งซ้าย: หมายเลขออเดอร์ -->
                 <div>
                   <span class="o-no"><%= orderNo(selected.Reference_Code) %></span>
                 </div>
-
-                <!-- ฝั่งขวา: เวลา (บน) และ วันที่ (ล่าง) -->
                 <div class="muted" style="text-align: right; font-size: 0.9em; line-height: 1.3; margin-left: auto;">
                   <div>🕒 <%= selected.Order_Time %> น.</div>
                   <div><%= selected.Order_Date %></div>
@@ -92,7 +87,7 @@
 
             <!-- ===== ปุ่มอัปเดตสถานะ / พิมพ์ใบเสร็จ ===== -->
             <div style="display:flex; flex-direction:column; gap:8px; margin-top:14px; width:100%;">
-              <% if (selected.Order_Status === STATUS.PREPARING) { %>
+              <% if (selected.Order_Status === 'กำลังเตรียมอาหาร') { %>
                 <a class="btn btn-amber" style="width:100%; text-align:center; box-sizing:border-box;" href="/kitchen/status?id=<%= selected.Order_ID %>">อัปเดตสถานะ</a>
               <% } %>
               <a class="btn btn-red" style="width:100%; text-align:center; box-sizing:border-box;" href="/kitchen/print/<%= selected.Order_ID %>" target="_blank">🖨️ พิมพ์ใบเสร็จ</a>
@@ -104,5 +99,57 @@
     <% } %>
   </main>
 </div>
+
+<!-- สคริปต์อัปเดตออเดอร์แบบเรียลไทม์ (Polling) -->
+<script>
+  (function() {
+    setInterval(function() {
+      fetch(window.location.href)
+        .then(res => res.text())
+        .then(html => {
+          const doc = new DOMParser().parseFromString(html, 'text/html');
+
+          // 1. อัปเดตตัวเลขจำนวนออเดอร์ในแท็บด้านบน
+          const currentTabs = document.querySelector('.kitchen-tabs');
+          const newTabs = doc.querySelector('.kitchen-tabs');
+          if (currentTabs && newTabs) {
+            currentTabs.innerHTML = newTabs.innerHTML;
+          }
+
+          // 2. ตรวจสอบการเปลี่ยนแปลงของโครงสร้างหลัก (จากไม่มีออเดอร์ -> มีออเดอร์ หรือตรงข้ามกัน)
+          const currentEmpty = document.querySelector('.empty-order');
+          const newEmpty = doc.querySelector('.empty-order');
+          const currentGrid = document.querySelector('.order-grid');
+          const newGrid = doc.querySelector('.order-grid');
+
+          if ((currentEmpty && newGrid) || (currentGrid && newEmpty)) {
+            // โครงสร้างหน้าจอเปลี่ยนไป (เช่น ออเดอร์แรกเข้ามา หรือทำออเดอร์หมดเกลี้ยงแล้ว) ให้โหลดหน้าใหม่เพื่อความสมบูรณ์
+            window.location.reload();
+            return;
+          }
+
+          // 3. อัปเดตรายการการ์ดออเดอร์แบบเรียลไทม์ โดยรักษาตำแหน่งการ Scroll
+          if (currentGrid && newGrid) {
+            // เช็คว่าถ้ากำลังเปิดดูรายละเอียดออเดอร์อยู่ แล้วออเดอร์นั้นถูกเพื่อนทำเสร็จไปแล้ว (หายจาก List ปัจจุบัน)
+            const currentSelected = currentGrid.querySelector('.o-card.selected');
+            if (currentSelected) {
+              const selectedHref = currentSelected.getAttribute('href');
+              const isStillExist = newGrid.querySelector(`.o-card[href="${selectedHref}"]`);
+              if (!isStillExist) {
+                window.location.reload(); // รีเฟรชเพื่อปิดแถบด้านข้าง
+                return;
+              }
+            }
+
+            const scrollTop = currentGrid.scrollTop; // เก็บค่าที่ Scroll ไว้
+            currentGrid.innerHTML = newGrid.innerHTML; // อัปเดตข้อมูลการ์ดทั้งหมด
+            currentGrid.scrollTop = scrollTop;         // คืนค่า Scroll ให้ไม่เด้งกลับไปด้านบน
+          }
+        })
+        .catch(err => console.error('Real-time update error:', err));
+    }, 1000); // ดึงข้อมูลออเดอร์ใหม่ทุกๆ 1 วินาที
+  })();
+</script>
+
 </body>
 </html>

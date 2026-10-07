@@ -1,5 +1,17 @@
 <%- include('../partials/head', {css: 'customer', title: 'เมนูอาหาร' }) %>
+<style>
+  /* คลาสสำหรับซ่อนหน้าจอชั่วคราวตอนโหลดกลับมาจุดเดิม เพื่อไม่ให้เห็นด้านบนกระตุก */
+  body.is-restoring { opacity: 0; }
+</style>
 <body>
+<!-- สคริปต์นี้ต้องอยู่ใต้ <body> ทันที เพื่อซ่อนหน้าจอก่อนที่เบราว์เซอร์จะเริ่ม Paint หน้าเว็บ -->
+<script>
+  const scrollKey = 'menuScrollPosition_<%= table.Table_ID %>';
+  if (sessionStorage.getItem(scrollKey)) {
+    document.body.classList.add('is-restoring');
+  }
+</script>
+
 <div class="phone">
   <!-- ===== Header แจ้งเลขโต๊ะ ===== -->
   <%- include('../partials/customer-header') %>
@@ -196,7 +208,7 @@
       });
     });
 
-    // 3. ระบบตรวจจับตำแหน่งการเลื่อนหน้าจอ (ScrollSpy ทั้งแท็บบน และ Sidebar ซ้าย)
+    // 3. ระบบตรวจจับตำแหน่งการเลื่อนหน้าจอ (ScrollSpy)
     function onScroll() {
       if (isClickScrolling) return;
 
@@ -247,6 +259,34 @@
     }
 
     window.addEventListener('scroll', onScroll);
+
+    // ====================================================================
+    // 4. ระบบบันทึกและเรียกคืนตำแหน่ง Scroll (แบบ Smooth ไร้รอยต่อ)
+    // ====================================================================
+    const savedPos = sessionStorage.getItem(scrollKey);
+    
+    if (savedPos) {
+      // ลบออกทันที
+      sessionStorage.removeItem(scrollKey);
+      
+      // ให้เวลา DOM จัดเรียงความสูงเล็กน้อย แล้วเลื่อนหน้าจอ ก่อนจะ Fade-in แสดงผล
+      setTimeout(() => {
+        window.scrollTo({ top: parseInt(savedPos, 10), behavior: 'instant' });
+        
+        // ค่อยๆ เฟดหน้าจอให้สว่างขึ้นอย่างนุ่มนวล
+        document.body.style.transition = 'opacity 0.25s ease-out';
+        document.body.classList.remove('is-restoring');
+      }, 50);
+    }
+
+    // บันทึกตำแหน่งก่อนผู้ใช้จะคลิกเปลี่ยนหน้า
+    window.addEventListener('pagehide', function() {
+      sessionStorage.setItem(scrollKey, window.scrollY);
+    });
+    window.addEventListener('beforeunload', function() {
+      sessionStorage.setItem(scrollKey, window.scrollY);
+    });
+    // ====================================================================
   });
 </script>
 </body>

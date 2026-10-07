@@ -8,7 +8,6 @@ router.get('/cashier', async (req, res) => {
     const tab = req.query.tab || 'all';
     const q = (req.query.q || '').trim();
 
-    // แก้ไข: เปลี่ยนเป็น LEFT JOIN และใช้ COALESCE เพื่อรองรับกรณีที่ยังไม่มีข้อมูลในตาราง Payment
     let sql = `SELECT o.*, t.Table_Number,
          COALESCE(p.Payment_Method, 'เงินสด') AS Payment_Method,
          COALESCE(p.Payment_Status, CASE WHEN o.Order_Status = '${STATUS.WAIT_PAY}' THEN 'รอชำระ' ELSE 'ชำระแล้ว' END) AS Payment_Status,
@@ -20,12 +19,16 @@ router.get('/cashier', async (req, res) => {
        LEFT JOIN "Table" t ON o.Table_ID = t.Table_ID
        WHERE date(o.Order_Date_Time, 'localtime') = date('now', 'localtime')
          AND o.Order_Status != '${STATUS.CART}'`;
+    
     const params = [];
     if (q) {
       sql += ` AND REPLACE(o.Reference_Code, '-', '') LIKE ?`;
       params.push('%' + q.replace('-', '') + '%');
     }
-    sql += ` ORDER BY (COALESCE(p.Payment_Status, 'รอชำระ') = 'รอชำระ') DESC, o.Order_Date_Time DESC`;
+    
+    // เรียงลำดับตามเวลาใหม่สุดขึ้นก่อนเสมอ (เอาการเรียงตามสถานะออก)
+    sql += ` ORDER BY o.Order_Date_Time DESC`;
+    
     const all = await dbAll(sql, params);
 
     const pending = all.filter((o) => o.Payment_Status === 'รอชำระ' || o.Order_Status === STATUS.WAIT_PAY);

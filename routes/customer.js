@@ -121,7 +121,6 @@ router.post('/table/:tableId/cart/add', async (req, res) => {
   const tableId = req.params.tableId;
   let backURL = '/table/' + tableId + '/menu';
   try {
-    // รับค่า soup1 และ soup2 จาก form
     const { menuId, spice, note, detailId, soup1, soup2 } = req.body;
     const qty = Math.min(MAX_QTY, Math.max(1, parseInt(req.body.qty, 10) || 1));
     const menu = await dbGet(MENU_SELECT + ' WHERE m.Menu_ID = ?', [menuId]);
@@ -138,13 +137,11 @@ router.post('/table/:tableId/cart/add', async (req, res) => {
       return res.redirect(backURL + 'error=spice');
     }
 
-    // ตรวจสอบว่าเป็นเมนู 2 ซุปหรือไม่ (เช็คจากชื่อเมนูมีเลข 2)
     const isTwoSoups = isSoup && menu.Menu_Name.includes('2');
     if (isTwoSoups && (!soup1 || !soup2)) {
       return res.redirect(backURL + 'error=soup');
     }
     
-    // เพิ่มเงื่อนไขตรวจสอบการเลือกน้ำซุปซ้ำ
     if (isTwoSoups && (soup1 === soup2)) {
       return res.redirect(backURL + 'error=samesoup');
     }
@@ -152,7 +149,6 @@ router.post('/table/:tableId/cart/add', async (req, res) => {
     const spiceValue = isSoup ? spice : null;
     let soupValue = isSoup ? menu.Menu_Name : null;
     
-    // หากเป็น 2 ซุป ให้เอาชื่อซุปมาต่อกัน
     if (isTwoSoups) {
       soupValue = soup1 + ' + ' + soup2;
     }
@@ -206,7 +202,6 @@ router.get('/table/:tableId/cart', async (req, res) => {
     const items = cart ? await getOrderItems(cart.Order_ID) : [];
     const total = items.reduce((sum, it) => sum + it.Subtotal, 0);
 
-    // ตรวจสอบเงื่อนไขวัตถุดิบและน้ำซุปโดยใช้ groupOf
     const hasIngredient = items.some(it => groupOf(it.Category_Name) === 'raw' || it.Category_Name === 'วัตถุดิบ');
     const hasSoup = items.some(it => groupOf(it.Category_Name) === 'soup' || it.Category_Name === 'ซุป' || !!it.Soup_Type);
     const missingSoup = hasIngredient && !hasSoup;
@@ -267,7 +262,6 @@ router.post('/table/:tableId/cart/confirm', async (req, res) => {
     const items = cart ? await getOrderItems(cart.Order_ID) : [];
     if (items.length === 0) return res.redirect('/table/' + tableId + '/cart?error=empty');
 
-    // ตรวจสอบเงื่อนไข: หากมีวัตถุดิบ ต้องมีน้ำซุปด้วย
     const hasIngredient = items.some(it => groupOf(it.Category_Name) === 'raw' || it.Category_Name === 'วัตถุดิบ');
     const hasSoup = items.some(it => groupOf(it.Category_Name) === 'soup' || it.Category_Name === 'ซุป' || !!it.Soup_Type);
     
@@ -314,6 +308,8 @@ router.post('/table/:tableId/checkout', async (req, res) => {
 
     const pay = await dbGet('SELECT * FROM Payment WHERE Order_ID = ?', [cart.Order_ID]);
     if (!pay) {
+      // ✅ แก้ไขปัญหา SQLITE_CONSTRAINT ทะลุ CHECK("Payment_Method" IN ('QR Code', 'เงินสด'))
+      // เปลี่ยนจาก 'ยังไม่เลือก' เป็น 'เงินสด' เพื่อให้ DB บันทึกได้ แล้วลูกค้าค่อยไปเปลี่ยนวิธีในหน้า payment
       await dbRun(
         'INSERT INTO Payment (Order_ID, Payment_Method, Payment_Amount, Change_Amount, Payment_Status) VALUES (?, ?, ?, ?, ?)',
         [cart.Order_ID, 'เงินสด', 0, 0, 'รอชำระ']
@@ -361,8 +357,8 @@ router.get('/table/:tableId/payment/:orderId', async (req, res) => {
       return res.redirect('/table/' + tableId + '/cart?error=expired');
     }
 
+    // เปิดให้ค่า method รอรับจาก req.query โดยไม่ต้อง fallback กลับไปที่ 'cash'
     let method = req.query.method || null;
-    if (order.Payment_Method === 'เงินสด' && !method) method = 'cash';
 
     let qrImage = null;
     if (method === 'qr') {

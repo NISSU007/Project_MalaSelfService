@@ -1,4 +1,4 @@
-<%- include('../partials/head', {css: 'cashier', title: 'คิดเงินสด', refresh: selected ? 0 : 15 }) %>
+<%- include('../partials/head', {css: 'cashier', title: 'คิดเงินสด', refresh: 0 }) %>
 <body>
 <div class="staff">
   <%- include('../partials/staff-top', { roleLabel: 'พนักงาน แคชเชียร์' }) %>
@@ -194,5 +194,42 @@
     </div>
   </main>
 </div>
+
+<!-- สคริปต์อัปเดตออเดอร์แบบเรียลไทม์ (Polling) -->
+<script>
+  (function() {
+    setInterval(function() {
+      // ดึงข้อมูลหน้าปัจจุบันเบื้องหลัง
+      fetch(window.location.href)
+        .then(res => res.text())
+        .then(html => {
+          const doc = new DOMParser().parseFromString(html, 'text/html');
+          
+          // 1. ตรวจสอบว่าออเดอร์ที่เลือกอยู่ปัจจุบันมีการเปลี่ยนสถานะหรือไม่ (เช่น ลูกค้าสแกนจ่ายสำเร็จไปแล้ว)
+          const currentBadge = document.querySelector('.detail-ref-title .badge');
+          const newBadge = doc.querySelector('.detail-ref-title .badge');
+          if (currentBadge && newBadge && currentBadge.textContent.trim() !== newBadge.textContent.trim()) {
+            window.location.reload(); // ถ้าระหว่างพิมพ์เงินอยู่แล้วลูกค้าจ่ายผ่าน QR สำเร็จ จะรีเฟรชอัปเดตหน้าจอทันที
+            return;
+          }
+
+          // 2. อัปเดตตัวเลขในแท็บด้านซ้าย
+          const newTabs = doc.querySelector('.s-tabs');
+          if (newTabs) document.querySelector('.s-tabs').innerHTML = newTabs.innerHTML;
+          
+          // 3. อัปเดตรายการออเดอร์ พร้อมรักษาตำแหน่ง Scroll บาร์เดิมไว้
+          const currentList = document.querySelector('.o-list');
+          const newList = doc.querySelector('.o-list');
+          if (currentList && newList) {
+            const scrollTop = currentList.scrollTop; // เก็บตำแหน่งเลื่อนปัจจุบัน
+            currentList.innerHTML = newList.innerHTML;
+            currentList.scrollTop = scrollTop;       // คืนค่าตำแหน่งเลื่อน
+          }
+        })
+        .catch(err => console.error('Real-time update error:', err));
+    }, 1000); // เช็คออเดอร์ใหม่ทุกๆ 1 วินาที
+  })();
+</script>
+
 </body>
 </html>

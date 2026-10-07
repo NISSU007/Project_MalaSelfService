@@ -36,9 +36,9 @@
         <p class="item-desc"><%= menu.Description %></p>
       <% } %>
 
-      <!-- ===== แจ้งเตือนข้อผิดพลาด ===== -->
+      <!-- ===== แจ้งเตือนข้อผิดพลาด (จากฝั่ง Server) ===== -->
       <% if (error === 'spice') { %>
-        <div class="alert alert-red" role="alert">กรุณาเลือกระดับความเผ็ดก่อนเพิ่มลงตะกร้า</div>
+        <div class="alert alert-red" id="serverSpiceAlert" role="alert">กรุณาเลือกระดับความเผ็ดก่อนเพิ่มลงตะกร้า</div>
       <% } else if (error === 'soup') { %>
         <div class="alert alert-red" role="alert">กรุณาเลือกน้ำซุปให้ครบทั้ง 2 ชนิด</div>
       <% } else if (error === 'samesoup') { %>
@@ -48,19 +48,22 @@
       <% } %>
 
       <% if (menu.isSoup) { %>
-        <!-- ===== ตัวเลือกระดับความเผ็ด (บังคับ) ===== -->
-        <span class="field-label">เลือกระดับความเผ็ด <span class="req">* จำเป็น</span></span>
-        <div class="spice-grid">
-          <% spiceLevels.forEach(function (lv, i) { %>
-            <div class="spice-opt">
-              <input type="radio" name="spice" id="sp<%= i %>" value="<%= lv %>" required
-                <%= editItem && editItem.Spiciness_Level === lv ? 'checked' : '' %>>
-              <label for="sp<%= i %>">
-                <span class="chilis"><%= i === 0 ? '🫑' : '🌶️'.repeat(i) %></span>
-                <%= lv %>
-              </label>
-            </div>
-          <% }) %>
+        <!-- ===== ตัวเลือกระดับความเผ็ด ===== -->
+        <div id="spiceContainer">
+          <span class="field-label">เลือกระดับความเผ็ด <span class="req">* จำเป็น</span></span>
+          <div class="spice-grid">
+            <% spiceLevels.forEach(function (lv, i) { %>
+              <div class="spice-opt">
+                <!-- นำ required ออก เพื่อไม่ให้ขึ้น Tooltip ของเบราว์เซอร์ และใช้ Custom Alert แทน -->
+                <input type="radio" name="spice" id="sp<%= i %>" value="<%= lv %>"
+                  <%= editItem && editItem.Spiciness_Level === lv ? 'checked' : '' %>>
+                <label for="sp<%= i %>">
+                  <span class="chilis"><%= i === 0 ? '❌' : '🌶️'.repeat(i) %></span>
+                  <%= lv %>
+                </label>
+              </div>
+            <% }) %>
+          </div>
         </div>
         
         <!-- ===== เลือก 2 น้ำซุป (กรณีชื่อเมนูมีเลข 2) ===== -->
@@ -70,22 +73,24 @@
             <label class="field-label" style="display: block; margin-bottom: 8px;">เลือกน้ำซุปที่ 1 <span class="req">* จำเป็น</span></label>
             <select name="soup1" class="note-input" style="height: 44px; margin-bottom: 12px; padding: 0 12px;" required>
               <option value="">-- กรุณาเลือกน้ำซุปที่ 1 --</option>
-              <option value="ซุปหม่าล่าต้นตำรับ" <%= editItem && editItem.Soup_Type && editItem.Soup_Type.split(' + ')[0] === 'ซุปหม่าล่าต้นตำรับ' ? 'selected' : '' %>>ซุปหม่าล่าต้นตำรับ</option>
-              <option value="ซุปกระดูกหมู" <%= editItem && editItem.Soup_Type && editItem.Soup_Type.split(' + ')[0] === 'ซุปกระดูกหมู' ? 'selected' : '' %>>ซุปกระดูกหมู</option>
-              <option value="ซุปมะเขือเทศ" <%= editItem && editItem.Soup_Type && editItem.Soup_Type.split(' + ')[0] === 'ซุปมะเขือเทศ' ? 'selected' : '' %>>ซุปมะเขือเทศ</option>
-              <option value="ซุปน้ำดำ" <%= editItem && editItem.Soup_Type && editItem.Soup_Type.split(' + ')[0] === 'ซุปน้ำดำ' ? 'selected' : '' %>>ซุปน้ำดำ</option>
-              <option value="ซุปเห็ดหอม" <%= editItem && editItem.Soup_Type && editItem.Soup_Type.split(' + ')[0] === 'ซุปเห็ดหอม' ? 'selected' : '' %>>ซุปเห็ดหอม</option>
+              <option value="น้ำซุปหม่าล่าดั้งเดิม" <%= editItem && editItem.Soup_Type && editItem.Soup_Type.split(' + ')[0] === 'น้ำซุปหม่าล่าดั้งเดิม' ? 'selected' : '' %>>น้ำซุปหม่าล่าดั้งเดิม</option>
+              <option value="น้ำซุปหม่าล่าต้มยำ" <%= editItem && editItem.Soup_Type && editItem.Soup_Type.split(' + ')[0] === 'น้ำซุปหม่าล่าต้มยำ' ? 'selected' : '' %>>น้ำซุปหม่าล่าต้มยำ</option>
+              <option value="น้ำซุปหม่าล่านม" <%= editItem && editItem.Soup_Type && editItem.Soup_Type.split(' + ')[0] === 'น้ำซุปหม่าล่านม' ? 'selected' : '' %>>น้ำซุปหม่าล่านม</option>
+              <option value="น้ำซุปใส" <%= editItem && editItem.Soup_Type && editItem.Soup_Type.split(' + ')[0] === 'น้ำซุปใส' ? 'selected' : '' %>>น้ำซุปใส</option>
+              <option value="น้ำซุปกระดูกหมู" <%= editItem && editItem.Soup_Type && editItem.Soup_Type.split(' + ')[0] === 'น้ำซุปกระดูกหมู' ? 'selected' : '' %>>น้ำซุปกระดูกหมู</option>
+              <option value="น้ำซุปดำ" <%= editItem && editItem.Soup_Type && editItem.Soup_Type.split(' + ')[0] === 'น้ำซุปดำ' ? 'selected' : '' %>>น้ำซุปดำ</option>
             </select>
 
             <!-- น้ำซุปที่ 2 -->
             <label class="field-label" style="display: block; margin-bottom: 8px;">เลือกน้ำซุปที่ 2 <span class="req">* จำเป็น</span></label>
             <select name="soup2" class="note-input" style="height: 44px; margin-bottom: 8px; padding: 0 12px;" required>
               <option value="">-- กรุณาเลือกน้ำซุปที่ 2 --</option>
-              <option value="ซุปหม่าล่าต้นตำรับ" <%= editItem && editItem.Soup_Type && editItem.Soup_Type.split(' + ')[1] === 'ซุปหม่าล่าต้นตำรับ' ? 'selected' : '' %>>ซุปหม่าล่าต้นตำรับ</option>
-              <option value="ซุปกระดูกหมู" <%= editItem && editItem.Soup_Type && editItem.Soup_Type.split(' + ')[1] === 'ซุปกระดูกหมู' ? 'selected' : '' %>>ซุปกระดูกหมู</option>
-              <option value="ซุปมะเขือเทศ" <%= editItem && editItem.Soup_Type && editItem.Soup_Type.split(' + ')[1] === 'ซุปมะเขือเทศ' ? 'selected' : '' %>>ซุปมะเขือเทศ</option>
-              <option value="ซุปน้ำดำ" <%= editItem && editItem.Soup_Type && editItem.Soup_Type.split(' + ')[1] === 'ซุปน้ำดำ' ? 'selected' : '' %>>ซุปน้ำดำ</option>
-              <option value="ซุปเห็ดหอม" <%= editItem && editItem.Soup_Type && editItem.Soup_Type.split(' + ')[1] === 'ซุปเห็ดหอม' ? 'selected' : '' %>>ซุปเห็ดหอม</option>
+              <option value="น้ำซุปหม่าล่าดั้งเดิม" <%= editItem && editItem.Soup_Type && editItem.Soup_Type.split(' + ')[1] === 'น้ำซุปหม่าล่าดั้งเดิม' ? 'selected' : '' %>>น้ำซุปหม่าล่าดั้งเดิม</option>
+              <option value="น้ำซุปหม่าล่าต้มยำ" <%= editItem && editItem.Soup_Type && editItem.Soup_Type.split(' + ')[1] === 'น้ำซุปหม่าล่าต้มยำ' ? 'selected' : '' %>>น้ำซุปหม่าล่าต้มยำ</option>
+              <option value="น้ำซุปหม่าล่านม" <%= editItem && editItem.Soup_Type && editItem.Soup_Type.split(' + ')[1] === 'น้ำซุปหม่าล่านม' ? 'selected' : '' %>>น้ำซุปหม่าล่านม</option>
+              <option value="น้ำซุปใส" <%= editItem && editItem.Soup_Type && editItem.Soup_Type.split(' + ')[1] === 'น้ำซุปใส' ? 'selected' : '' %>>น้ำซุปใส</option>
+              <option value="น้ำซุปกระดูกหมู" <%= editItem && editItem.Soup_Type && editItem.Soup_Type.split(' + ')[1] === 'น้ำซุปกระดูกหมู' ? 'selected' : '' %>>น้ำซุปกระดูกหมู</option>
+              <option value="น้ำซุปดำ" <%= editItem && editItem.Soup_Type && editItem.Soup_Type.split(' + ')[1] === 'น้ำซุปดำ' ? 'selected' : '' %>>น้ำซุปดำ</option>
             </select>
           </div>
         <% } %>
@@ -135,24 +140,127 @@
     const soup1 = document.querySelector('select[name="soup1"]');
     const soup2 = document.querySelector('select[name="soup2"]');
 
-    // ฟังก์ชันตรวจสอบน้ำซุปซ้ำ
-    function validateSoups() {
-      if (soup1.value !== "" && soup2.value !== "" && soup1.value === soup2.value) {
-        soup2.setCustomValidity('ไม่สามารถเลือกประเภทน้ำซุปซ้ำกันได้ กรุณาเลือกน้ำซุปให้แตกต่างกัน');
+    // ฟังก์ชันซ่อนแจ้งเตือนน้ำซุปซ้ำเมื่อผู้ใช้เปลี่ยนค่าใหม่
+    function hideSoupAlert() {
+      const alertBox = document.getElementById('clientSoupAlert');
+      if (alertBox) alertBox.style.display = 'none';
+    }
+
+    // ฟังก์ชันซ่อน/แสดง เลือกระดับความเผ็ด
+    function updateSpiceVisibility() {
+      const spiceContainer = document.getElementById('spiceContainer');
+      if (!spiceContainer) return;
+
+      const menuName = "<%= menu.Menu_Name %>";
+      
+      const isNonSpicy = (name) => {
+        if (!name) return false;
+        // จับคู่คำว่า 'ใส', 'กระดูกหมู', 'ดำ' เพื่อซ่อนระดับความเผ็ด
+        return name.includes('ใส') || name.includes('กระดูกหมู') || name.includes('ดำ');
+      };
+
+      let requireSpice = true;
+
+      if (soup1 && soup2) {
+        const val1 = soup1.value;
+        const val2 = soup2.value;
+
+        if (val1 !== "" || val2 !== "") {
+          const s1Spicy = val1 !== "" && !isNonSpicy(val1);
+          const s2Spicy = val2 !== "" && !isNonSpicy(val2);
+          requireSpice = s1Spicy || s2Spicy;
+        }
       } else {
-        soup2.setCustomValidity('');
+        if (isNonSpicy(menuName)) {
+          requireSpice = false;
+        }
+      }
+
+      const radios = spiceContainer.querySelectorAll('input[type="radio"]');
+      if (requireSpice) {
+        spiceContainer.style.display = 'block';
+      } else {
+        spiceContainer.style.display = 'none';
+        
+        // เลือกตัวเลือกระดับแรกสุดอัตโนมัติ (เช่น ❌ ไม่เผ็ด) เพื่อส่งค่าไปที่ Backend ไม่ให้เกิด Error
+        if (radios.length > 0) {
+          radios[0].checked = true;
+        }
+        
+        // ซ่อน Alert ฝั่ง Client หากมีค้างอยู่
+        const alertBox = document.getElementById('clientSpiceAlert');
+        if (alertBox) alertBox.style.display = 'none';
+
+        // ซ่อน Alert ฝั่ง Server ถ้ามีแจ้งเตือนค้างอยู่
+        const serverAlert = document.getElementById('serverSpiceAlert');
+        if (serverAlert) serverAlert.style.display = 'none';
       }
     }
 
-    if (itemForm && soup1 && soup2) {
-      // เช็คทุกครั้งที่มีการเปลี่ยน Dropdown
-      soup1.addEventListener('change', validateSoups);
-      soup2.addEventListener('change', validateSoups);
+    if (itemForm) {
+      if (soup1 && soup2) {
+        // เมื่อมีการเปลี่ยนซุป ให้ซ่อนแจ้งเตือนแล้วเช็คความเผ็ดใหม่
+        soup1.addEventListener('change', () => { hideSoupAlert(); updateSpiceVisibility(); });
+        soup2.addEventListener('change', () => { hideSoupAlert(); updateSpiceVisibility(); });
+      }
 
-      // เช็คซ้ำอีกรอบตอนกดปุ่ม submit
+      // เช็คซ้ำและตรวจสอบความเผ็ดตอนกดปุ่ม submit
       itemForm.addEventListener('submit', function(e) {
-        validateSoups();
+        // 1. ตรวจสอบน้ำซุปซ้ำกัน (Custom Alert)
+        if (soup1 && soup2) {
+          let soupAlert = document.getElementById('clientSoupAlert');
+          if (soupAlert) soupAlert.style.display = 'none';
+
+          if (soup1.value !== "" && soup2.value !== "" && soup1.value === soup2.value) {
+            e.preventDefault(); // หยุดการทำงานของฟอร์ม
+            
+            if (!soupAlert) {
+              soupAlert = document.createElement('div');
+              soupAlert.id = 'clientSoupAlert';
+              soupAlert.className = 'alert alert-red';
+              soupAlert.setAttribute('role', 'alert');
+              soupAlert.style.marginBottom = '16px';
+              soupAlert.textContent = 'ไม่สามารถเลือกประเภทน้ำซุปซ้ำกันได้ กรุณาเลือกน้ำซุปที่ต่างกัน';
+              
+              // แทรกกล่องแจ้งเตือนไว้ใต้ช่องเลือกน้ำซุปที่ 2
+              soup2.parentNode.insertBefore(soupAlert, soup2.nextSibling);
+            }
+            
+            soupAlert.style.display = 'block';
+            soupAlert.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            
+            // หยุดการตรวจสอบอื่นต่อเพื่อให้โฟกัสที่การแก้ซุปก่อน
+            return; 
+          }
+        }
+
+        // 2. ตรวจสอบว่าเลือกระดับความเผ็ดหรือยัง (ถ้าต้องเลือก)
+        const spiceContainer = document.getElementById('spiceContainer');
+        let spiceAlert = document.getElementById('clientSpiceAlert');
+        if (spiceAlert) spiceAlert.style.display = 'none';
+
+        if (spiceContainer && spiceContainer.style.display !== 'none') {
+          const isChecked = spiceContainer.querySelector('input[type="radio"]:checked');
+          if (!isChecked) {
+            e.preventDefault(); // หยุดการทำงานของฟอร์ม
+            
+            // สร้างกล่องแจ้งเตือนใหม่หากยังไม่มี
+            if (!spiceAlert) {
+              spiceAlert = document.createElement('div');
+              spiceAlert.id = 'clientSpiceAlert';
+              spiceAlert.className = 'alert alert-red';
+              spiceAlert.setAttribute('role', 'alert');
+              spiceAlert.style.marginBottom = '16px';
+              spiceAlert.textContent = 'กรุณาเลือกระดับความเผ็ดก่อนเพิ่มลงตะกร้า';
+              spiceContainer.parentNode.insertBefore(spiceAlert, spiceContainer);
+            }
+            spiceAlert.style.display = 'block';
+            spiceAlert.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          }
+        }
       });
+
+      updateSpiceVisibility();
     }
   });
 </script>

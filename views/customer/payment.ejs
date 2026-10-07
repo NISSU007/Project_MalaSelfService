@@ -14,33 +14,37 @@
 
   <!-- ===== ตัวเลือกช่องทางชำระเงิน ===== -->
   <div class="pay-options">
-    <a class="pay-opt <%= method === 'qr' ? 'active' : '' %>" href="?method=qr">
+    <a class="pay-opt <%= typeof method !== 'undefined' && method === 'qr' ? 'active' : '' %>" href="?method=qr">
       <span class="ico">🔳</span>QR Code<small>สแกน QR จ่ายเงิน</small>
     </a>
     <form method="post" action="/table/<%= table.Table_ID %>/payment/<%= order.Order_ID %>/cash" style="margin:0">
-      <button class="pay-opt <%= method === 'cash' ? 'active' : '' %>" type="submit">
+      <button class="pay-opt <%= typeof method !== 'undefined' && method === 'cash' ? 'active' : '' %>" type="submit">
         <span class="ico">💵</span>เงินสด<small>ชำระที่เคาน์เตอร์</small>
       </button>
     </form>
   </div>
 
-  <% if (method === 'qr') { %>
+  <% if (typeof method !== 'undefined' && method === 'qr') { %>
     <!-- ===== แสดง QR Code สำหรับสแกนจ่าย ===== -->
     <section class="pay-panel">
       <h3>สแกน QR Code</h3>
-      <div class="qr-box">
-        <img src="<%= qrImage %>" alt="QR Code สำหรับชำระเงิน">
-        <div>
-          <div class="muted">จำนวนเงิน</div>
-          <div class="ref-big" style="font-size:24px"><%= baht(order.Total_Price) %> บาท</div>
-          <div class="muted" style="margin-top:6px">รหัสอ้างอิง <%= order.Reference_Code %></div>
+      <!-- ย้าย Form มาครอบกล่อง QR เพื่อใช้กดจำลองจ่าย -->
+      <form id="qrPayForm" method="post" action="/table/<%= table.Table_ID %>/payment/<%= order.Order_ID %>/qr" style="margin-top:14px">
+        <div class="qr-box" onclick="document.getElementById('qrPayForm').submit();" style="cursor: pointer;" title="คลิกที่นี่เพื่อจำลองการสแกนจ่าย">
+          <img src="<%= qrImage %>" alt="QR Code สำหรับชำระเงิน">
+          <div>
+            <div class="muted">จำนวนเงิน</div>
+            <div class="ref-big" style="font-size:24px"><%= baht(order.Total_Price) %> บาท</div>
+            <div class="muted" style="margin-top:6px">รหัสอ้างอิง <%= order.Reference_Code %></div>
+          </div>
         </div>
-      </div>
-      <form method="post" action="/table/<%= table.Table_ID %>/payment/<%= order.Order_ID %>/qr" style="margin-top:14px">
-        <button class="btn btn-green btn-block" type="submit">✔ ชำระเงินสำเร็จ (จำลองการสแกนจ่าย)</button>
       </form>
+      <!-- เพิ่มหมายเหตุการจำลองแสกนด้านล่าง -->
+      <p class="muted" style="text-align: center; margin-top: 16px; font-size: 13px; color: #888;">
+        * หมายเหตุ: กดที่ QR Code เพื่อจำลองการสแกน
+      </p>
     </section>
-  <% } else if (method === 'cash') { %>
+  <% } else if (typeof method !== 'undefined' && method === 'cash') { %>
     <!-- ===== ข้อมูลสำหรับชำระเงินสดที่เคาน์เตอร์ ===== -->
     <section class="pay-panel">
       <h3>กรุณานำข้อมูลนี้ไปชำระที่เคาน์เตอร์</h3>
@@ -50,7 +54,6 @@
         <tr><td>ยอดที่ต้องชำระ</td><td><%= baht(order.Total_Price) %> บาท</td></tr>
       </table>
       <p class="muted" style="margin:12px 0">แจ้งหมายเลขอ้างอิงการชำระเงินกับพนักงานแคชเชียร์</p>
-      <a class="btn btn-red btn-block" href="/table/<%= table.Table_ID %>/order/<%= order.Order_ID %>">ดูสถานะคำสั่งซื้อ</a>
     </section>
   <% } %>
 
@@ -76,6 +79,30 @@
       tick();
     </script>
   <% } %>
+
+  <!-- ===== ตรวจจับการเปลี่ยนสถานะจากพนักงานแคชเชียร์อัตโนมัติ (Auto Redirect) ===== -->
+  <script>
+    (function() {
+      const orderId = "<%= order.Order_ID %>";
+      const tableId = "<%= table.Table_ID %>";
+      const currentStatus = "<%= order.Order_Status %>";
+
+      function checkPaymentStatus() {
+        fetch('/api/order/' + orderId)
+          .then(res => res.json())
+          .then(data => {
+            // เมื่อพนักงานแคชเชียร์อัปเดตสถานะ (เช่น เป็น 'กำลังเตรียมอาหาร' หรือ 'ชำระแล้ว')
+            if (data.ok && data.status !== currentStatus) {
+              window.location.href = '/table/' + tableId + '/order/' + orderId;
+            }
+          })
+          .catch(err => console.error('Error checking status:', err));
+      }
+
+      // เช็คสถานะใหม่ทุกๆ 2.5 วินาที
+      setInterval(checkPaymentStatus, 2500);
+    })();
+  </script>
 </div>
 </body>
 </html>
